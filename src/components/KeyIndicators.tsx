@@ -1,0 +1,97 @@
+import React from 'react';
+import { TrendingUp, DollarSign, Calendar, FileText, PieChart, Building2 } from 'lucide-react';
+
+interface IndicatorCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  trend?: 'up' | 'down' | 'neutral';
+  subtitle?: string;
+  className?: string;
+}
+
+const IndicatorCard: React.FC<IndicatorCardProps> = ({ title, value, icon, trend, subtitle, className = "" }) => (
+  <div className={`indicator-card ${className}`}>
+    <div className="flex items-start justify-between">
+      <div className="flex flex-col items-start justify-between w-full min-h-[80px]">
+        <div className="indicator-icon mb-4">
+          {icon}
+        </div>
+        <div className="w-full">
+          <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
+          <p className="text-1xl font-bold text-gray-900 mb-1">{value}</p>
+          {subtitle && (
+            <p className="text-xs text-gray-500 font-medium">{subtitle}</p>
+          )}
+        </div>
+      </div>
+      {trend && (
+        <div className={`p-2 rounded-full shadow-sm ${
+          trend === 'up' ? 'bg-gradient-to-br from-green-50 to-emerald-50' : 
+          trend === 'down' ? 'bg-gradient-to-br from-red-50 to-rose-50' : 
+          'bg-gradient-to-br from-gray-50 to-slate-50'
+        }`}>
+          <TrendingUp className={`h-4 w-4 ${
+            trend === 'up' ? 'text-green-600' : 
+            trend === 'down' ? 'text-red-600 rotate-180' : 
+            'text-gray-600'
+          }`} />
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+const KeyIndicators: React.FC = () => {
+  return (
+    <div className="card-elevated p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Key Indicators</h2>
+          <p className="text-gray-600">Essential financial metrics and company information</p>
+        </div>
+        <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <IndicatorCard
+          title="Authorised Capital"
+          value="₹476.85 Cr"
+          icon={<DollarSign className="h-6 w-6" />}
+          trend="neutral"
+          className="sm:col-span-1"
+        />
+        <IndicatorCard
+          title="Paid Up Capital"
+          value="₹424.50 Cr"
+          icon={<PieChart className="h-6 w-6" />}
+          trend="up"
+          className="sm:col-span-1"
+        />
+        <IndicatorCard
+          title="Company Age"
+          value="45 Years"
+          icon={<Calendar className="h-6 w-6" />}
+          subtitle="Since 1979"
+          className="sm:col-span-1 lg:col-span-1"
+        />
+        <IndicatorCard
+          title="Last Filing with ROC"
+          value="31 Mar 2024"
+          icon={<FileText className="h-6 w-6" />}
+          trend="up"
+          className="sm:col-span-1 lg:col-span-1"
+        />
+        <IndicatorCard
+          title="Open Charges"
+          value="₹2,843.73 Cr"
+          icon={<TrendingUp className="h-6 w-6" />}
+          trend="up"
+          className="sm:col-span-2 lg:col-span-1 xl:col-span-1"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default KeyIndicators;
