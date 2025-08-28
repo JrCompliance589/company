@@ -5,7 +5,7 @@ const CompanyHeader: React.FC = () => {
   return (
     <div className="card-elevated p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
-        <div className="flex items-start gap-4 md:gap-6 min-w-0">
+        <div className="flex items-start gap-4 md:gap-6 min-w-0 flex-1">
           {/* Company Logo */}
           <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg border border-blue-200/50">
             <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg">
@@ -13,14 +13,25 @@ const CompanyHeader: React.FC = () => {
             </div>
           </div>
 
-          {/* Company Info */}
+          {/* Company Info with integrated share button */}
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3 md:mb-4">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">Jupiter Wagons Limited</h1>
-              <div className="flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 px-2.5 py-1 rounded-full border border-green-200/50">
-                <Shield className="h-4 w-4 text-green-600" />
-                <span className="text-xs font-semibold text-green-700">Verified</span>
+            <div className="flex items-start justify-between gap-3 mb-3 md:mb-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight break-words">
+                    Jupiter Wagons Limited
+                  </h1>
+                  <div className="flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 px-2.5 py-1 rounded-full border border-green-200/50">
+                    <Shield className="h-4 w-4 text-green-600" />
+                    <span className="text-xs font-semibold text-green-700">Verified</span>
+                  </div>
+                </div>
               </div>
+              
+              {/* Share button integrated into the layout */}
+              <button className="p-2.5 md:p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 border border-gray-200/50 flex-shrink-0">
+                <Share2 className="h-5 w-5" />
+              </button>
             </div>
 
             <p className="text-gray-600 mb-3 md:mb-4 leading-relaxed text-sm sm:text-base">
@@ -54,13 +65,6 @@ const CompanyHeader: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 md:gap-3 self-stretch md:self-auto">
-          <button className="p-2.5 md:p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 border border-gray-200/50">
-            <Share2 className="h-5 w-5" />
-          </button>
         </div>
       </div>
 

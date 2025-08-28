@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="flex items-center mb-6">
               <img
-                src="/logo/veri.png"
+                src="/veri.png"
                 alt="Veriffyvista"
                 style={{ height: '150px', width: '150px' }}
                 className="object-contain"
@@ -67,11 +67,11 @@ const Footer: React.FC = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-blue-400" />
-                <span className="text-gray-300">+91 1800-123-4567</span>
+                <span className="text-gray-300">+91 11 430 22 315</span>
               </div>
               <div className="flex items-center space-x-3">
-                <MapPin className="h-5 w-5 text-blue-400" />
-                <span className="text-gray-300">Madipur, New Delhi, India</span>
+                <MapPin className="h-10 w-10 text-blue-400" />
+                <span className="text-gray-300">Third Floor ,House No.9 ,Paschim Vihar ,Madipur Metro Station ,Paschim Vihar Extension ,West Delhi ,Delhi-110063</span>
               </div>
             </div>
 
@@ -199,9 +199,6 @@ const Footer: React.FC = () => {
               </Link>
               <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">
                 Terms of Service
-              </Link>
-              <Link to="/cookies" className="text-gray-400 hover:text-white transition-colors">
-                Cookie Policy
               </Link>
             </div>
           </div>

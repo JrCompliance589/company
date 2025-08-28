@@ -70,14 +70,14 @@ const AboutSection: React.FC = () => {
       
       {/* Call to Action */}
       <div className="mt-8 p-6 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border border-gray-200/50">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h4 className="text-lg font-semibold text-gray-900 mb-1">Need More Details?</h4>
             <p className="text-sm text-gray-600">Access comprehensive financial data, director information, and detailed reports.</p>
           </div>
           <button 
             onClick={() => window.location.href = '/pricing'}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-sm hover:shadow-md sm:flex-shrink-0"
           >
             Upgrade
           </button>
