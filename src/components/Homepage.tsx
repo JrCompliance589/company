@@ -3,6 +3,8 @@ import { Search, BarChart3, Users, Target, Shield, ArrowRight, TrendingUp, Build
 import { motion } from 'framer-motion';
 import { meiliSearchService, SearchResult } from '../services/meiliSearch';
 import SearchDropdown from './SearchDropdown';
+import Header from './Header';
+import Footer from './Footer';
 
 const Homepage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -172,15 +174,17 @@ const Homepage: React.FC = () => {
     loadSuggestions();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    return (
+<div className="min-h-screen" style={{ background: "linear-gradient(135deg, #1a1054, #255ff1)" }}>      {/* Header Component */}
+      <Header />
+      
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.02%22%3E%3Ccircle cx=%2230%22 cy=%2230%22 r=%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -210,7 +214,7 @@ const Homepage: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-lg text-gray-400 mb-12 max-w-5xl mx-auto leading-relaxed"
             >
-              Make informed decisions with speed and confidence using The Company Check. Whether you're evaluating startups or analyzing large enterprises, our platform delivers the most comprehensive and reliable data intelligence tailored for professionals in banking, finance, corporate, and government sectors.
+              Make informed decisions with speed and confidence using The VerifyVista. Whether you're evaluating startups or analyzing large enterprises, our platform delivers the most comprehensive and reliable data intelligence tailored for professionals in banking, finance, corporate, and government sectors.
             </motion.p>
 
             {/* Search Section */}
@@ -293,10 +297,7 @@ const Homepage: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Wave Separator */}
-        <div className="absolute bottom-0 left-0 right-0">
-          
-        </div>
+
       </div>
 
       {/* Features Section */}
@@ -359,7 +360,7 @@ const Homepage: React.FC = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="bg-white py-16">
+      <div className="bg-white py-16 mb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -392,6 +393,9 @@ const Homepage: React.FC = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

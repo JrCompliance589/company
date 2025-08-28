@@ -114,7 +114,7 @@ const Pricing: React.FC = () => {
         {/* Additional Info */}
         <div className="mt-16 text-center">
           <div className="card p-8 max-w-3xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Why Choose Veriffyvista?</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Why Choose Verifyvista?</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
               <div className="flex flex-col items-center space-y-3">
                 <div className="p-3 bg-blue-100 rounded-xl">

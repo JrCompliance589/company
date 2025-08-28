@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell, Menu, X } from 'lucide-react';
+import { Bell, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
@@ -8,7 +8,10 @@ const Header: React.FC = () => {
   const toggleMenu = () => setIsOpen(prev => !prev);
 
   return (
-    <header style={{backgroundColor:'#ffff !important'}} className="sticky top-0 w-full text-white shadow-xl border-b border-slate-700/50 z-50">
+    <header 
+      className="sticky top-0 w-full text-white shadow-xl border-b border-slate-700/50 z-50"
+      style={{ background: "linear-gradient(45deg, #1a1054, #255ff1)" }}
+    >
 
       <div  className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -16,25 +19,15 @@ const Header: React.FC = () => {
           <div className="flex items-center">
             <a href="/" className="hover:opacity-90 transition-opacity duration-200">
               <img 
-                src="/logo/veri.png" 
+                src="/veri.png" 
                 alt="VERIFY" 
-                style={{ height: '100px', width: '100px' }}
+                style={{ height: '150px', width: '150px' }}
                 className="object-contain" 
               />
             </a>
           </div>
 
-          {/* Search Bar (desktop) */}
-          <div className="hidden md:block flex-1 max-w-2xl mx-8">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search for Company Name or CIN"
-                className="w-full pl-12 pr-4 py-3 bg-slate-800/80 backdrop-blur-sm border border-slate-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400 transition-all duration-200 hover:bg-slate-800/90"
-              />
-            </div>
-          </div>
+
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-4">
@@ -74,15 +67,7 @@ const Header: React.FC = () => {
       {isOpen && (
         <div className="md:hidden fixed inset-x-0 top-16 bottom-0 bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 shadow-2xl overflow-y-auto">
           <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
-            {/* Search (mobile) */}
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search for Company Name or CIN"
-                className="w-full pl-12 pr-4 py-3 bg-slate-800/80 border border-slate-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400 transition-all duration-200"
-              />
-            </div>
+
             <div className="grid grid-cols-1 gap-2">
               <Link to="/products" onClick={() => setIsOpen(false)} className="w-full text-left text-gray-200 hover:text-white px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 bg-slate-800/40 hover:bg-slate-800/70">
                 Products

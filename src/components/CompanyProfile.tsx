@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Breadcrumb from "./Breadcrumb";
 import CompanyHeader from "./CompanyHeader";
 import SidebarNav, { SidebarItem } from "./SidebarNav";
+import Footer from "./Footer";
+
 import {
   Building2,
   FileText,
@@ -96,7 +98,7 @@ const CompanyProfile: React.FC = () => {
                 className="hover:opacity-90 transition-opacity duration-200"
               >
                 <img
-                  src="/logo/veri.png"
+                  src="/veri.png"
                   alt="Veriffyvista"
                   style={{ height: "150px", width: "150px" }}
                   className="object-contain"
@@ -293,6 +295,9 @@ const CompanyProfile: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Add Footer here - after the floating CTA */}
+      <Footer />
     </div>
   );
 };

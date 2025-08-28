@@ -234,7 +234,7 @@ const SignIn: React.FC = () => {
             <div className="flex items-center">
               <a href="/" className="hover:opacity-90 transition-opacity duration-200">
                 <img
-                  src="/logo/veri.png"
+                  src="/veri.png"
                   alt="Veriffyvista"
                   style={{ height: '150px', width: '150px' }}
                   className="object-contain"
@@ -283,7 +283,7 @@ const SignIn: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card-elevated p-6 md:p-8">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
-              {signUpMode ? 'Join Veriffyvista!' : 'Welcome Back to Veriffyvista!'}
+              {signUpMode ? 'Join Verifyvista!' : 'Welcome Back to Verifyvista!'}
             </h2>
             <p className="text-gray-600 mb-6">
               {signUpMode ? 'Create an account to access powerful business insights.' : 'Sign in to access powerful business insights instantly.'}
@@ -328,7 +328,7 @@ const SignIn: React.FC = () => {
             <div className="mt-2 text-sm text-gray-600">
               {!signUpMode && (
                 <span>
-                  New to Veriffyvista?{' '}
+                  New to Verifyvista?{' '}
                   <button
                     onClick={() => {
                       setSignUpMode(true);
@@ -435,7 +435,7 @@ const SignIn: React.FC = () => {
                 </span>
               ) : (
                 <span>
-                  New to Veriffyvista?{' '}
+                  New to Verifyvista?{' '}
                   <button
                     onClick={() => {
                       setSignUpMode(true);

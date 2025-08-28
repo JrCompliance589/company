@@ -5,7 +5,6 @@ import Homepage from './components/Homepage';
 import CompanyProfile from './components/CompanyProfile';
 import Pricing from './components/Pricing';
 import SignIn from './components/SignIn';
-import MeiliSearchDebug from './components/MeiliSearchDebug';
 
 const App: React.FC = () => {
   return (
