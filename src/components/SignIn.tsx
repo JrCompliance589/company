@@ -4,7 +4,6 @@ import { CheckCircle2 } from 'lucide-react';
 import { useAuth } from './AuthContext';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
-console.log('Frontend Google Client ID:', GOOGLE_CLIENT_ID); // Debug log
 
 const SignIn: React.FC = () => {
   const navigate = useNavigate();
