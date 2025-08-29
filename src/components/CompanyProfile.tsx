@@ -1,5 +1,5 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Breadcrumb from "./Breadcrumb";
 import CompanyHeader from "./CompanyHeader";
 import SidebarNav, { SidebarItem } from "./SidebarNav";
@@ -24,11 +24,53 @@ import KeyIndicators from "./KeyIndicators";
 import Directors from "./Directors";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { meiliSearchService } from "../services/meiliSearch";
+import { processCompanyData, ProcessedCompanyData } from "../utils/companyUtils";
 
 const CompanyProfile: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { companyName, cin } = useParams<{ companyName: string; cin: string }>();
   const [signUpMode, setSignUpMode] = React.useState(false);
+  const [companyData, setCompanyData] = useState<ProcessedCompanyData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch company data when CIN is available
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      if (!cin) {
+        // If no CIN, use default data (existing behavior)
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await meiliSearchService.getCompanyByCIN(cin);
+        if (data) {
+          const processedData = processCompanyData(data);
+          setCompanyData(processedData);
+          console.log('Fetched company data:', processedData);
+          console.log('Raw MeiliSearch data:', data);
+          console.log('Date of Incorporation:', data.dateOfIncorporation);
+          console.log('State:', data.state);
+          console.log('Country:', data.country);
+        } else {
+          setError('Company not found');
+          console.log('Company not found for CIN:', cin);
+        }
+      } catch (err) {
+        setError('Failed to fetch company data');
+        console.error('Error fetching company data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompanyData();
+  }, [cin]);
 
   const sidebarItems: SidebarItem[] = [
     { label: "Overview", icon: Building2 },
@@ -79,10 +121,45 @@ const CompanyProfile: React.FC = () => {
   }, []);
 
   const breadcrumbItems = [
-    { label: "Home", href: "#" },
+    { label: "Home", href: "/" },
     { label: "Company", href: "#" },
-    { label: "Jupiter Wagons Limited" },
+    { label: companyData?.companyName || companyName || "Jupiter Wagons Limited" },
   ];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen gradient-secondary">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 text-lg">Loading company data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen gradient-secondary">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Company</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => navigate('/')}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go Back Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen gradient-secondary">
@@ -136,7 +213,7 @@ const CompanyProfile: React.FC = () => {
       <Breadcrumb items={breadcrumbItems} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <CompanyHeader />
+        <CompanyHeader companyData={companyData} />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           {/* Sidebar */}
@@ -155,7 +232,7 @@ const CompanyProfile: React.FC = () => {
               data-section="Overview"
               className="scroll-mt-24"
             >
-              <AboutSection />
+              <AboutSection companyData={companyData} />
             </section>
 
             <section className="space-y-6 sm:space-y-8">
@@ -164,14 +241,14 @@ const CompanyProfile: React.FC = () => {
                 data-section="Key Indicators"
                 className="scroll-mt-24"
               >
-                <KeyIndicators />
+                <KeyIndicators companyData={companyData} />
               </div>
               <div
                 id="Company-Details"
                 data-section="Company Details"
                 className="scroll-mt-24"
               >
-                <CompanyDetails />
+                <CompanyDetails companyData={companyData} />
               </div>
               <div
                 id="Directors"

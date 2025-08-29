@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, BarChart3, Users, Target, Shield, ArrowRight, TrendingUp, Building2, FileText, Zap } from 'lucide-react';
+import { Search, Users, Target, Shield, ArrowRight, TrendingUp, Building2, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { meiliSearchService, SearchResult } from '../services/meiliSearch';
 import SearchDropdown from './SearchDropdown';
@@ -57,13 +57,35 @@ const Homepage: React.FC = () => {
     }, 300);
   };
 
-  // Handle result selection
+  // Handle result selection - Updated with debugging and proper navigation
   const handleSelectResult = (result: SearchResult) => {
+    console.log('Homepage: handleSelectResult called with:', result);
+    
     setSearchQuery(result.CompanyName || result.company_name || result.name || '');
     setShowDropdown(false);
     setSelectedIndex(-1);
-    // Navigate to company profile with the selected company
-    window.location.href = '/company';
+    
+    // Navigate to dynamic company profile URL
+    if (result.CIN) {
+      const companyNameSlug = (result.CompanyName || result.company_name || result.name || 'unknown')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      
+      const navigationUrl = `/company/${companyNameSlug}/${result.CIN}`;
+      console.log('Homepage: Navigating to:', navigationUrl);
+      
+      // Use setTimeout to ensure state updates complete before navigation
+      setTimeout(() => {
+        window.location.href = navigationUrl;
+      }, 100);
+    } else {
+      console.log('Homepage: No CIN found, navigating to default');
+      // Fallback to default company page if no CIN
+      setTimeout(() => {
+        window.location.href = '/company';
+      }, 100);
+    }
   };
 
   // Handle keyboard navigation
@@ -86,6 +108,7 @@ const Homepage: React.FC = () => {
       case 'Enter':
         e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
+          console.log('Homepage: Enter key pressed, selecting result:', searchResults[selectedIndex]);
           handleSelectResult(searchResults[selectedIndex]);
         }
         break;
@@ -99,7 +122,14 @@ const Homepage: React.FC = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+      const target = event.target as HTMLElement | null;
+
+      // Ignore clicks inside the portal-rendered dropdown
+      if (target && target.closest('[data-search-dropdown="true"]')) {
+        return;
+      }
+
+      if (searchContainerRef.current && !searchContainerRef.current.contains(target as Node)) {
         setShowDropdown(false);
       }
     };
@@ -174,8 +204,9 @@ const Homepage: React.FC = () => {
     loadSuggestions();
   }, []);
 
-    return (
-<div className="min-h-screen" style={{ background: "linear-gradient(135deg, #1a1054, #255ff1)" }}>      {/* Header Component */}
+  return (
+    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #1a1054, #255ff1)" }}>
+      {/* Header Component */}
       <Header />
       
       {/* Hero Section */}
@@ -256,6 +287,7 @@ const Homepage: React.FC = () => {
                   onClose={() => setShowDropdown(false)}
                   selectedIndex={selectedIndex}
                   onKeyDown={handleKeyDown}
+                  searchContainerRef={searchContainerRef}
                 />
               </div>
 
@@ -267,9 +299,24 @@ const Homepage: React.FC = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
-                    onClick={() => {
+                    onClick={async () => {
                       setSearchQuery(suggestion);
-                      performSearch(suggestion);
+                      try {
+                        const results = await meiliSearchService.search(suggestion, 1);
+                        if (results.length > 0 && results[0].CIN) {
+                          const companyNameSlug = (results[0].CompanyName || results[0].company_name || results[0].name || 'unknown')
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/^-+|-+$/g, '');
+                          
+                          window.location.href = `/company/${companyNameSlug}/${results[0].CIN}`;
+                        } else {
+                          performSearch(suggestion);
+                        }
+                      } catch (error) {
+                        console.error('Error navigating to company:', error);
+                        performSearch(suggestion);
+                      }
                     }}
                     className="px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-gray-300 hover:text-white hover:bg-white/20 transition-all duration-200 text-sm"
                   >
@@ -296,8 +343,6 @@ const Homepage: React.FC = () => {
             </motion.div>
           </motion.div>
         </div>
-
-
       </div>
 
       {/* Features Section */}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrendingUp, DollarSign, Calendar, FileText, PieChart, Building2 } from 'lucide-react';
+import { ProcessedCompanyData } from '../utils/companyUtils';
 
 interface IndicatorCardProps {
   title: string;
@@ -17,16 +18,18 @@ const IndicatorCard: React.FC<IndicatorCardProps> = ({ title, value, icon, trend
         <div className="indicator-icon mb-4">
           {icon}
         </div>
-        <div className="w-full">
+        <div className="w-full min-w-0">
           <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
-          <p className="text-1xl font-bold text-gray-900 mb-1">{value}</p>
+          <p className="text-lg lg:text-base xl:text-lg font-bold text-gray-900 mb-1 break-words leading-tight overflow-hidden">
+            {value}
+          </p>
           {subtitle && (
-            <p className="text-xs text-gray-500 font-medium">{subtitle}</p>
+            <p className="text-xs text-gray-500 font-medium break-words">{subtitle}</p>
           )}
         </div>
       </div>
       {trend && (
-        <div className={`p-2 rounded-full shadow-sm ${
+        <div className={`p-2 rounded-full shadow-sm flex-shrink-0 ${
           trend === 'up' ? 'bg-gradient-to-br from-green-50 to-emerald-50' : 
           trend === 'down' ? 'bg-gradient-to-br from-red-50 to-rose-50' : 
           'bg-gradient-to-br from-gray-50 to-slate-50'
@@ -42,7 +45,11 @@ const IndicatorCard: React.FC<IndicatorCardProps> = ({ title, value, icon, trend
   </div>
 );
 
-const KeyIndicators: React.FC = () => {
+interface KeyIndicatorsProps {
+  companyData?: ProcessedCompanyData | null;
+}
+
+const KeyIndicators: React.FC<KeyIndicatorsProps> = ({ companyData }) => {
   return (
     <div className="card-elevated p-8">
       <div className="flex items-center justify-between mb-8">
@@ -53,26 +60,31 @@ const KeyIndicators: React.FC = () => {
         <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      {/* Fixed grid with better overflow handling */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
         <IndicatorCard
           title="Authorised Capital"
-          value="₹476.85 Cr"
+          value={companyData?.formattedAuthorisedCapital || "₹476.85 Cr"}
           icon={<DollarSign className="h-6 w-6" />}
           trend="neutral"
           className="sm:col-span-1"
         />
         <IndicatorCard
           title="Paid Up Capital"
-          value="₹424.50 Cr"
+          value={companyData?.formattedPaidUpCapital || "₹424.50 Cr"}
           icon={<PieChart className="h-6 w-6" />}
           trend="up"
           className="sm:col-span-1"
         />
         <IndicatorCard
           title="Company Age"
-          value="45 Years"
+          value={`${companyData?.companyAge || 45} Years`}
           icon={<Calendar className="h-6 w-6" />}
-          subtitle="Since 1979"
+          subtitle={`Since ${companyData?.dateOfIncorporation ? 
+            (companyData.dateOfIncorporation.includes('/') ? 
+              companyData.dateOfIncorporation.split('/')[2] : 
+              new Date(companyData.dateOfIncorporation).getFullYear()
+            ) : 1979}`}
           className="sm:col-span-1 lg:col-span-1"
         />
         <IndicatorCard
@@ -87,7 +99,7 @@ const KeyIndicators: React.FC = () => {
           value="₹2,843.73 Cr"
           icon={<TrendingUp className="h-6 w-6" />}
           trend="up"
-          className="sm:col-span-2 lg:col-span-1 xl:col-span-1"
+          className="sm:col-span-1 lg:col-span-1"
         />
       </div>
     </div>

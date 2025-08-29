@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mail, Phone, Globe, Smartphone, MapPin, ExternalLink, Lock } from 'lucide-react';
+import { ProcessedCompanyData } from '../utils/companyUtils';
 
 interface DetailItemProps {
   label: string;
@@ -54,7 +55,11 @@ const ContactItem: React.FC<{
   </div>
 );
 
-const CompanyDetails: React.FC = () => {
+interface CompanyDetailsProps {
+  companyData?: ProcessedCompanyData | null;
+}
+
+const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData }) => {
   const isContactLocked = true;
 
   return (
@@ -143,31 +148,31 @@ const CompanyDetails: React.FC = () => {
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <DetailItem 
             label="CIN/LLPIN" 
-            value="L28100MP1979PLC049375" 
+            value={companyData?.cin || "L28100MP1979PLC049375"} 
           />
           <DetailItem 
             label="Registration Number" 
-            value="049375" 
+            value={companyData?.registrationNumber || "049375"} 
           />
           <DetailItem 
             label="Incorporation Date" 
-            value="28 September 1979" 
+            value={companyData?.formattedIncorporationDate || "28 September 1979"} 
           />
           <DetailItem 
             label="Authorized Capital" 
-            value="₹476.85 Cr" 
+            value={companyData?.formattedAuthorisedCapital || "₹476.85 Cr"} 
           />
           <DetailItem 
             label="Paid-Up Capital" 
-            value="₹424.50 Cr" 
+            value={companyData?.formattedPaidUpCapital || "₹424.50 Cr"} 
           />
           <DetailItem 
             label="ROC Code" 
-            value="Roc Gwalior" 
+            value={companyData?.roc || "Roc Gwalior"} 
           />
           <DetailItem 
             label="Listing Status" 
-            value="Listed (BSE: 533272, NSE: CEBECO)" 
+            value={companyData?.listingStatus || "Not Available"} 
           />
           <DetailItem 
             label="Company Status" 

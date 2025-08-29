@@ -70,6 +70,7 @@ class MeiliSearchService {
       }
 
       const data: SearchResponse = await response.json();
+      console.log('MeiliSearch response data:', data);
       
       return data.hits || [];
     } catch (error) {
@@ -101,6 +102,7 @@ class MeiliSearchService {
         }),
       });
 
+      console.log('MeiliSearch CIN search response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -109,6 +111,7 @@ class MeiliSearchService {
       }
 
       const data: SearchResponse = await response.json();
+      console.log('MeiliSearch CIN search response data:', data);
       
       return data.hits && data.hits.length > 0 ? data.hits[0] : null;
     } catch (error) {

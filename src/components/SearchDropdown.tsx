@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Building2, MapPin, Phone, Mail, ArrowUpRight } from 'lucide-react';
 import { SearchResult } from '../services/meiliSearch';
 
@@ -10,6 +11,7 @@ interface SearchDropdownProps {
   onClose: () => void;
   selectedIndex?: number;
   onKeyDown?: (e: React.KeyboardEvent) => void;
+  searchContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 const SearchDropdown: React.FC<SearchDropdownProps> = ({
@@ -20,27 +22,78 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   onClose,
   selectedIndex = -1,
   onKeyDown,
+  searchContainerRef,
 }) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Calculate dropdown position and handle scroll
+  useEffect(() => {
+    if (!isVisible || !searchContainerRef?.current || !dropdownRef.current) return;
+
+    const updatePosition = () => {
+      if (!searchContainerRef?.current || !dropdownRef.current) return;
+      
+      const searchRect = searchContainerRef.current.getBoundingClientRect();
+      const dropdown = dropdownRef.current;
+
+      dropdown.style.position = 'fixed';
+      dropdown.style.top = `${searchRect.bottom + 12}px`;
+      dropdown.style.left = `${searchRect.left}px`;
+      dropdown.style.width = `${searchRect.width}px`;
+    };
+
+    // Initial position calculation
+    requestAnimationFrame(updatePosition);
+
+    // Close dropdown on scroll instead of updating position
+    const handleScroll = () => {
+      onClose();
+    };
+
+    // Update position on resize only
+    const handleResize = () => {
+      if (isVisible) {
+        requestAnimationFrame(updatePosition);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isVisible, searchContainerRef, onClose]);
+
+  // Handle result selection with proper event handling
+  const handleResultClick = (result: SearchResult, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('SearchDropdown: Button clicked:', result);
+    onSelectResult(result);
+  };
+
   if (!isVisible) return null;
 
-  return (
+  const dropdownContent = (
     <>
-      {/* Dark backdrop overlay */}
-      <div 
-        className="fixed inset-0 bg-black/20 z-40" 
-        onClick={onClose}
-      />
-      
       {/* Main dropdown container - Dark theme */}
       <div 
-        className="absolute top-full left-0 right-0 mt-3 z-50 max-h-[480px] overflow-hidden"
+        ref={dropdownRef}
+        data-search-dropdown="true"
+        className="max-h-[480px] overflow-hidden"
         style={{
+          zIndex: 1000000,
+          position: 'fixed',
           background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
           borderRadius: '16px',
           border: '1px solid rgba(71, 85, 105, 0.3)',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(71, 85, 105, 0.2)',
           backdropFilter: 'blur(12px)'
         }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling to backdrop
       >
         {/* Header with dark gradient */}
         <div 
@@ -106,11 +159,9 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
           ) : results.length > 0 ? (
             <div className="p-2">
               {results.map((result, index) => (
-                <button
+                <div
                   key={result.id || index}
-                  onClick={() => onSelectResult(result)}
-                  onKeyDown={onKeyDown}
-                  className="w-full text-left p-4 rounded-xl transition-all duration-200 group border mb-1 last:mb-0"
+                  className="w-full text-left p-4 rounded-xl transition-all duration-200 group border mb-1 last:mb-0 cursor-pointer"
                   style={{
                     backgroundColor: index === selectedIndex 
                       ? 'rgba(59, 130, 246, 0.15)' 
@@ -132,6 +183,16 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                       e.currentTarget.style.borderColor = 'transparent';
                     }
                   }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('SearchDropdown: Div clicked:', result);
+                    handleResultClick(result, e);
+                  }}
+                  onKeyDown={onKeyDown}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Select ${result.CompanyName || result.company_name || result.name || 'company'}`}
                 >
                   <div className="flex items-start space-x-4">
                     {/* Company Icon with dark theme */}
@@ -154,20 +215,25 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                     
                     {/* Company Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <h4 
-                            className="text-base font-semibold truncate transition-colors"
-                            style={{ 
-                              color: index === selectedIndex ? '#ffffff' : '#f1f5f9' 
-                            }}
-                          >
-                            {result.CompanyName || result.company_name || result.name || 'Unknown Company'}
-                          </h4>
-                          <div 
-                            className="flex-shrink-0 w-2 h-2 rounded-full shadow-sm"
-                            style={{ backgroundColor: '#4ade80' }}
-                          ></div>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <div className="flex items-start space-x-2">
+                            <h4 
+                              className="text-base font-semibold leading-tight transition-colors"
+                              style={{ 
+                                color: index === selectedIndex ? '#ffffff' : '#f1f5f9',
+                                wordBreak: 'break-word',
+                                overflowWrap: 'break-word',
+                                hyphens: 'auto'
+                              }}
+                            >
+                              {result.CompanyName || result.company_name || result.name || 'Unknown Company'}
+                            </h4>
+                            <div 
+                              className="flex-shrink-0 w-2 h-2 rounded-full shadow-sm mt-1.5"
+                              style={{ backgroundColor: '#4ade80' }}
+                            ></div>
+                          </div>
                         </div>
                         
                         {/* Action indicator */}
@@ -178,30 +244,46 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                       
                       {/* Address */}
                       {result.address && (
-                        <div className="flex items-center space-x-2 text-sm mb-2" style={{ color: '#cbd5e1' }}>
-                          <MapPin className="h-4 w-4" style={{ color: '#94a3b8' }} />
-                          <span className="truncate">{result.address}</span>
+                        <div className="flex items-start space-x-2 text-sm mb-2" style={{ color: '#cbd5e1' }}>
+                          <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: '#94a3b8' }} />
+                          <span 
+                            className="leading-tight"
+                            style={{ 
+                              wordBreak: 'break-word',
+                              overflowWrap: 'break-word'
+                            }}
+                          >
+                            {result.address}
+                          </span>
                         </div>
                       )}
                       
                       {/* Contact Information */}
-                      <div className="flex items-center space-x-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-6">
                         {result.phone && (
                           <div className="flex items-center space-x-2 text-sm" style={{ color: '#94a3b8' }}>
-                            <Phone className="h-3.5 w-3.5" style={{ color: '#6b7280' }} />
+                            <Phone className="h-3.5 w-3.5 flex-shrink-0" style={{ color: '#6b7280' }} />
                             <span className="font-medium">{result.phone}</span>
                           </div>
                         )}
                         {result.email && (
                           <div className="flex items-center space-x-2 text-sm" style={{ color: '#94a3b8' }}>
-                            <Mail className="h-3.5 w-3.5" style={{ color: '#6b7280' }} />
-                            <span className="truncate font-medium">{result.email}</span>
+                            <Mail className="h-3.5 w-3.5 flex-shrink-0" style={{ color: '#6b7280' }} />
+                            <span 
+                              className="font-medium"
+                              style={{ 
+                                wordBreak: 'break-all',
+                                overflowWrap: 'break-word'
+                              }}
+                            >
+                              {result.email}
+                            </span>
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           ) : (
@@ -243,6 +325,11 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
       </div>
     </>
   );
+
+  // Use React Portal to render at document body level
+  return typeof document !== 'undefined' 
+    ? createPortal(dropdownContent, document.body)
+    : null;
 };
 
 export default SearchDropdown;

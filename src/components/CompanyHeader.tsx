@@ -1,7 +1,13 @@
 import React from 'react';
 import { Shield, Share2, Download, MapPin, Calendar, TrendingUp, Building2 } from 'lucide-react';
+import { ProcessedCompanyData } from '../utils/companyUtils';
 
-const CompanyHeader: React.FC = () => {
+interface CompanyHeaderProps {
+  companyData?: ProcessedCompanyData | null;
+}
+
+const CompanyHeader: React.FC<CompanyHeaderProps> = ({ companyData }) => {
+  console.log('CompanyHeader received companyData:', companyData);
   return (
     <div className="card-elevated p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
@@ -19,7 +25,7 @@ const CompanyHeader: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight break-words">
-                    Jupiter Wagons Limited
+                    {companyData?.companyName || 'Jupiter Wagons Limited'}
                   </h1>
                   <div className="flex items-center space-x-2 bg-gradient-to-r from-green-50 to-emerald-50 px-2.5 py-1 rounded-full border border-green-200/50">
                     <Shield className="h-4 w-4 text-green-600" />
@@ -35,7 +41,7 @@ const CompanyHeader: React.FC = () => {
             </div>
 
             <p className="text-gray-600 mb-3 md:mb-4 leading-relaxed text-sm sm:text-base">
-              A leading automotive public limited company based in Jabalpur, Madhya Pradesh, India, established in 1979. Specializing in commercial vehicles & fleet manufacturing.
+              {companyData?.address || 'A leading automotive public limited company based in Jabalpur, Madhya Pradesh, India, established in 1979. Specializing in commercial vehicles & fleet manufacturing.'}
             </p>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm text-gray-500">
@@ -43,13 +49,17 @@ const CompanyHeader: React.FC = () => {
                 <div className="p-1.5 bg-blue-100 rounded-lg">
                   <Calendar className="h-4 w-4 text-blue-600" />
                 </div>
-                <span className="font-medium text-gray-700">Est. 1979</span>
+                <span className="font-medium text-gray-700">
+                  Est. {companyData?.dateOfIncorporation || 'Not available'}
+                </span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="p-1.5 bg-purple-100 rounded-lg">
                   <MapPin className="h-4 w-4 text-purple-600" />
                 </div>
-                <span className="font-medium text-gray-700">Jabalpur, MP</span>
+                <span className="font-medium text-gray-700">
+                  {companyData?.location || 'Jabalpur, MP'}
+                </span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="p-1.5 bg-green-100 rounded-lg">
@@ -77,7 +87,9 @@ const CompanyHeader: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Revenue</p>
-              <p className="text-base sm:text-lg font-bold text-gray-900">₹2,079.33 Cr</p>
+              <p className="text-base sm:text-lg font-bold text-gray-900">
+                {companyData?.formattedAuthorisedCapital || '₹2,079.33 Cr'}
+              </p>
             </div>
           </div>
           
@@ -87,7 +99,9 @@ const CompanyHeader: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">Net Worth</p>
-              <p className="text-base sm:text-lg font-bold text-gray-900">₹908.60 Cr</p>
+              <p className="text-base sm:text-lg font-bold text-gray-900">
+                {companyData?.formattedPaidUpCapital || '₹908.60 Cr'}
+              </p>
             </div>
           </div>
           
@@ -97,7 +111,9 @@ const CompanyHeader: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Status</p>
-              <p className="text-base sm:text-lg font-bold text-gray-900">Listed</p>
+              <p className="text-base sm:text-lg font-bold text-gray-900">
+                {companyData?.listingStatus || 'Listed'}
+              </p>
             </div>
           </div>
           
@@ -107,7 +123,9 @@ const CompanyHeader: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-orange-600 uppercase tracking-wide">Incorporated</p>
-              <p className="text-base sm:text-lg font-bold text-gray-900">June 25, 2025</p>
+              <p className="text-base sm:text-lg font-bold text-gray-900">
+                {companyData?.dateOfIncorporation || 'June 25, 2025'}
+              </p>
             </div>
           </div>
         </div>

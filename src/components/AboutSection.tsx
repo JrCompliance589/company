@@ -1,12 +1,19 @@
 import React from 'react';
 import { ExternalLink, MapPin, Building2, Calendar, Users } from 'lucide-react';
+import { ProcessedCompanyData } from '../utils/companyUtils';
 
-const AboutSection: React.FC = () => {
+interface AboutSectionProps {
+  companyData?: ProcessedCompanyData | null;
+}
+
+const AboutSection: React.FC<AboutSectionProps> = ({ companyData }) => {
   return (
     <div className="card-elevated p-8 mb-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">About Jupiter Wagons Limited</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            About {companyData?.companyName || 'Jupiter Wagons Limited'}
+          </h2>
           <p className="text-gray-600">Comprehensive company overview and background information</p>
         </div>
         <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
@@ -30,7 +37,9 @@ const AboutSection: React.FC = () => {
           </div>
           <div>
             <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">Established</p>
-            <p className="text-sm font-semibold text-gray-900">28 September 1979</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {companyData?.formattedIncorporationDate || '28 September 1979'}
+            </p>
           </div>
         </div>
         
@@ -40,14 +49,16 @@ const AboutSection: React.FC = () => {
           </div>
           <div>
             <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Location</p>
-            <p className="text-sm font-semibold text-gray-900">Jabalpur, MP</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {companyData?.location || 'Jabalpur, MP'}
+            </p>
           </div>
         </div>
       </div>
       
       <div className="prose prose-gray max-w-none">
         <p className="text-gray-700 leading-relaxed mb-6 text-base">
-          <span className="font-semibold text-gray-900">Jupiter Wagons Limited</span>, a active public limited company, was established on 28 September 1979 in Jabalpur, Madhya Pradesh, India. Engaging in commercial vehicles & fleet within the manufacturing sector, it holds CIN: L28100MP1979PLC049375. Registered under ROC Roc Gwalior. It is listed on{' '}
+          <span className="font-semibold text-gray-900">{companyData?.companyName || 'Jupiter Wagons Limited'}</span>, a active public limited company, was established on {companyData?.formattedIncorporationDate || '28 September 1979'} in {companyData?.location || 'Jabalpur, Madhya Pradesh, India'}. Engaging in commercial vehicles & fleet within the manufacturing sector, it holds CIN: {companyData?.cin || 'L28100MP1979PLC049375'}. Registered under ROC {companyData?.roc || 'Roc Gwalior'}. It is listed on{' '}
           <a href="#" className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center transition-colors duration-200">
             BSE: 533272
             <ExternalLink className="h-3 w-3 ml-1" />
@@ -57,14 +68,14 @@ const AboutSection: React.FC = () => {
             NSE: CEBECO
             <ExternalLink className="h-3 w-3 ml-1" />
           </a>
-          . It has an authorized capital of ₹476.85 Cr and a paid-up capital of ₹424.50 Cr.
+          . It has an authorized capital of {companyData?.formattedAuthorisedCapital || '₹476.85 Cr'} and a paid-up capital of {companyData?.formattedPaidUpCapital || '₹424.50 Cr'}.
         </p>
 
         <p className="text-gray-700 leading-relaxed mb-6 text-base">
-          Formerly known as Commercial Engineers & Body Builders Co Limited, Commercial Engineers & Body Builders Co Private Limited, it upholds a compliant status. In 2023, it reported revenue of ₹2,079.33 Cr and a net worth of ₹908.60 Cr. Its leadership includes{' '}
+          Formerly known as Commercial Engineers & Body Builders Co Limited, Commercial Engineers & Body Builders Co Private Limited, it upholds a compliant status. In 2023, it reported revenue of {companyData?.formattedAuthorisedCapital || '₹2,079.33 Cr'} and a net worth of {companyData?.formattedPaidUpCapital || '₹908.60 Cr'}. Its leadership includes{' '}
           <span className="font-semibold text-gray-900">Vivek Lohia</span> (Director),{' '}
           <span className="font-semibold text-gray-900">Vikash Lohia</span> (Whole-Time Director),{' '}
-          <span className="font-semibold text-gray-900">Vivek Lohia</span> (Managing Director). Past directors included Vineet Chandra, Kailash Chand Gupta, Anil Goyal Joshi. It holds ₹2,843.73 Cr open charges and ₹3,559.02 Cr settled loans. Its latest AGM occurred on 12 September 2024, with the balance sheet filed on 31 March 2024. It is based at 46, Vandana Vihar, Narmada Road, Gorakhpur, Jabalpur, Madhya Pradesh, 482001.
+          <span className="font-semibold text-gray-900">Vivek Lohia</span> (Managing Director). Past directors included Vineet Chandra, Kailash Chand Gupta, Anil Goyal Joshi. It holds ₹2,843.73 Cr open charges and ₹3,559.02 Cr settled loans. Its latest AGM occurred on 12 September 2024, with the balance sheet filed on 31 March 2024. It is based at {companyData?.address || '46, Vandana Vihar, Narmada Road, Gorakhpur, Jabalpur, Madhya Pradesh, 482001'}.
         </p>
       </div>
       

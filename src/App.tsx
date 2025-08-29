@@ -15,11 +15,11 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/company" element={<CompanyProfile />} />
+          <Route path="/company/:companyName/:cin" element={<CompanyProfile />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
-      
         </Routes>
       </Router>
     </AuthProvider>
