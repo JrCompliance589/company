@@ -172,16 +172,17 @@ const Footer: React.FC = () => {
                 Get the latest insights and company intelligence delivered to your inbox.
               </p>
             </div>
-            <div className="flex w-full md:w-auto">
+            <div className="flex w-full max-w-full">
               <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 md:w-80 px-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
-              />
-              <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-r-lg transition-all duration-200 shadow-lg hover:shadow-xl">
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 min-w-0 px-3 sm:px-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400 text-sm"
+                    />
+              <button className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-r-lg transition-all duration-200 shadow-lg hover:shadow-xl text-sm whitespace-nowrap flex-shrink-0">
                 Subscribe
               </button>
             </div>
+
           </div>
         </div>
       </div>
