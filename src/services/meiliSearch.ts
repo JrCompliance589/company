@@ -3,6 +3,19 @@ interface SearchResult {
   name?: string;
   company_name?: string;
   CompanyName?: string;
+  CIN?: string;
+  Address?: string;
+  dateOfIncorporation?: string;
+  DateofIncorporation?: string;
+  authorisedCapital?: string;
+  AuthorisedCapital?: string;
+  paidUpCapital?: string;
+  PaidUpCapital?: string;
+  ROC?: string;
+  registerationNumber?: string;
+  whetherListedOrNot?: string;
+  state?: string;
+  country?: string;
   [key: string]: any;
 }
 
@@ -19,7 +32,7 @@ class MeiliSearchService {
   private apiKey: string;
 
   constructor() {
-    this.baseUrl = 'http://meilisearch-fs4w0k88c4s0gwgs0sswwc8c.103.109.7.130.sslip.io:7700';
+    this.baseUrl = 'https://meilisearch.verifyvista.com/';
     this.indexName = 'sqldata';
     this.apiKey = 'aSampleMasterKey';
   }
@@ -57,12 +70,50 @@ class MeiliSearchService {
       }
 
       const data: SearchResponse = await response.json();
-      console.log('MeiliSearch response data:', data);
       
       return data.hits || [];
     } catch (error) {
       console.error('MeiliSearch search error:', error);
       throw error; // Re-throw to handle in component
+    }
+  }
+
+  async getCompanyByCIN(cin: string): Promise<SearchResult | null> {
+    if (!cin.trim()) {
+      return null;
+    }
+
+    try {
+      console.log('Fetching company by CIN:', cin);
+      
+      const response = await fetch(`${this.baseUrl}/indexes/${this.indexName}/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          q: cin,
+          limit: 1,
+          attributesToRetrieve: ['*'],
+          // Try without filter first, then with filter if needed
+          filter: null,
+        }),
+      });
+
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`MeiliSearch API error: ${response.status} - ${response.statusText}`, errorText);
+        throw new Error(`MeiliSearch API error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data: SearchResponse = await response.json();
+      
+      return data.hits && data.hits.length > 0 ? data.hits[0] : null;
+    } catch (error) {
+      console.error('MeiliSearch CIN search error:', error);
+      throw error;
     }
   }
 
