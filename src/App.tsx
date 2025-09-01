@@ -7,6 +7,7 @@ import Pricing from './components/Pricing';
 import SignIn from './components/SignIn';
 import PrivacyPolicy from './components/privacy';
 import TermsOfService from './components/terms';
+import AdminDashboard from './components/AdminDashboard';
 
 const App: React.FC = () => {
   return (
@@ -20,6 +21,9 @@ const App: React.FC = () => {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminDashboard />} />
+          <Route path="/admin/orders" element={<AdminDashboard />} />
         </Routes>
       </Router>
     </AuthProvider>

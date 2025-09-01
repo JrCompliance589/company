@@ -91,7 +91,13 @@ const SignIn: React.FC = () => {
             setSuccess('Google Sign-In successful! Welcome back.');
             setUser(data.user); // Store user in context
             setFormData({ fullName: '', email: '', password: '' });
-            navigate('/company'); // Redirect to /company
+            
+            // Redirect admin users to admin dashboard, others to homepage
+            if (data.user.is_admin) {
+              navigate('/admin');
+            } else {
+              navigate('/');
+            }
           } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to connect to the server.';
             setError(`Google Sign-In error: ${errorMessage}`);
@@ -164,10 +170,42 @@ const SignIn: React.FC = () => {
         return;
       }
 
-      setSuccess('Sign up successful! Please sign in.');
+      setSuccess('Sign up successful! Welcome to Verifyvista!');
       setFormData({ fullName: '', email: '', password: '' });
       setSignUpMode(false);
-      navigate('/signin'); // Reset to sign-in mode
+      
+      // Automatically log the user in after successful signup
+      try {
+        const signInResponse = await fetch('/api/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+          credentials: 'include',
+        });
+
+        const signInData = await signInResponse.json();
+        
+        if (signInResponse.ok) {
+          setUser(signInData.user); // Store user in context
+          
+          // Redirect based on user type
+          if (signInData.user.is_admin) {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
+        } else {
+          // If auto-login fails, redirect to homepage anyway
+          navigate('/');
+        }
+      } catch (err) {
+        console.error('Auto-login after signup failed:', err);
+        // Redirect to homepage even if auto-login fails
+        navigate('/');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect to the server.';
       setError(errorMessage);
@@ -209,10 +247,16 @@ const SignIn: React.FC = () => {
         return;
       }
 
-      setSuccess('Sign in successful! Welcome back.');
-      setUser(data.user); // Store user in context
-      setFormData({ fullName: '', email: '', password: '' });
-      navigate('/company'); // Redirect to /company
+                  setSuccess('Sign in successful! Welcome back.');
+            setUser(data.user); // Store user in context
+            setFormData({ fullName: '', email: '', password: '' });
+            
+            // Redirect admin users to admin dashboard, others to homepage
+            if (data.user.is_admin) {
+              navigate('/admin');
+            } else {
+              navigate('/');
+            }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect to the server.';
       setError(errorMessage);

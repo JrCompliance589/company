@@ -76,17 +76,23 @@ const KeyIndicators: React.FC<KeyIndicatorsProps> = ({ companyData }) => {
           trend="up"
           className="sm:col-span-1"
         />
-        <IndicatorCard
-          title="Company Age"
-          value={`${companyData?.companyAge || 45} Years`}
-          icon={<Calendar className="h-6 w-6" />}
-          subtitle={`Since ${companyData?.dateOfIncorporation ? 
-            (companyData.dateOfIncorporation.includes('/') ? 
-              companyData.dateOfIncorporation.split('/')[2] : 
-              new Date(companyData.dateOfIncorporation).getFullYear()
-            ) : 1979}`}
-          className="sm:col-span-1 lg:col-span-1"
-        />
+        <IndicatorCard 
+  title="Company Age"
+  value={
+    companyData?.companyAge !== undefined 
+      ? companyData.companyAge === 0 
+        ? `${companyData.companyAgeInMonths} Months`
+        : `${companyData.companyAge} Years`
+      : '0 Months'
+  }
+  icon={<Calendar className="h-6 w-6" />}
+  subtitle={`Since ${companyData?.dateOfIncorporation ? 
+    (companyData.dateOfIncorporation.includes('/') ? 
+      companyData.dateOfIncorporation.split('/')[2] : 
+      new Date(companyData.dateOfIncorporation).getFullYear()
+    ) : 'Unknown'}`}
+  className="sm:col-span-1 lg:col-span-1" 
+/>
         <IndicatorCard
           title="Last Filing with ROC"
           value="31 Mar 2024"

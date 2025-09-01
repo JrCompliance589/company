@@ -86,7 +86,7 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({ companyData }) => {
               <TrendingUp className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Revenue</p>
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Authorised Capital</p>
               <p className="text-base sm:text-lg font-bold text-gray-900">
                 {companyData?.formattedAuthorisedCapital || '₹2,079.33 Cr'}
               </p>
@@ -98,7 +98,7 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({ companyData }) => {
               <Building2 className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">Net Worth</p>
+              <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">Paid Up Capital</p>
               <p className="text-base sm:text-lg font-bold text-gray-900">
                 {companyData?.formattedPaidUpCapital || '₹908.60 Cr'}
               </p>

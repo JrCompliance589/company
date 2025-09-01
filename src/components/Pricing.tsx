@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CheckCircle2, Star, Zap, Shield, Download, Users, Clock, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const tiers = [
   {
@@ -40,6 +41,44 @@ const tiers = [
 ];
 
 const Pricing: React.FC = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if user came from a company profile page
+    const searchParams = new URLSearchParams(location.search);
+    const companyCIN = searchParams.get('cin');
+    const companyName = searchParams.get('company');
+
+    if (user && companyCIN && companyName) {
+      // Create order when user visits pricing from company page
+      createOrder(companyCIN, companyName);
+    }
+  }, [user, location]);
+
+  const createOrder = async (companyCIN: string, companyName: string) => {
+    try {
+      const response = await fetch('http://localhost:3001/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user?.id,
+          user_email: user?.email,
+          company_cin: companyCIN,
+          company_name: companyName,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Order created successfully for company:', companyName);
+      } else {
+        console.error('Failed to create order');
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-secondary">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

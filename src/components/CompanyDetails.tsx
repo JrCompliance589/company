@@ -57,10 +57,22 @@ const ContactItem: React.FC<{
 
 interface CompanyDetailsProps {
   companyData?: ProcessedCompanyData | null;
+  companyCIN?: string;
+  companyName?: string;
 }
 
-const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData }) => {
+const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData, companyCIN, companyName }) => {
   const isContactLocked = true;
+
+  const handlePricingClick = () => {
+    if (companyCIN && companyName) {
+      // Navigate to pricing with company information
+      window.location.href = `/pricing?cin=${encodeURIComponent(companyCIN)}&company=${encodeURIComponent(companyName)}`;
+    } else {
+      // Navigate to pricing without company information
+      window.location.href = '/pricing';
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -80,7 +92,7 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData }) => {
               icon={<Mail className="h-5 w-5 text-blue-600" />} 
               label="Email" 
               placeholder="Contact information available in full report"
-              action={() => window.location.href = '/pricing'}
+              action={handlePricingClick}
               actionLabel="Upgrade"
             />
             <ContactItem 
@@ -114,7 +126,7 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData }) => {
                 <span className="font-semibold">Contact information locked</span>
               </div>
               <button 
-                onClick={() => (window.location.href = '/pricing')}
+                onClick={handlePricingClick}
                 className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 text-sm sm:px-5 sm:py-2.5 rounded-lg font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 Get instant access
@@ -127,7 +139,7 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData }) => {
               <div className="px-3 py-2 sm:px-4 sm:py-3">
                 <div className="flex flex-col items-center gap-1 sm:flex-row sm:justify-center sm:gap-2">
                   <span className="text-center text-xs sm:text-sm text-gray-700">Reveal contact details and communication channels -</span>
-                  <button onClick={() => (window.location.href = '/pricing')} className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-semibold underline-offset-2 hover:underline">Get instant access now!</button>
+                  <button onClick={handlePricingClick} className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-semibold underline-offset-2 hover:underline">Get instant access now!</button>
                 </div>
               </div>
             </div>

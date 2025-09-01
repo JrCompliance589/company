@@ -6,16 +6,31 @@ interface SearchResult {
   CIN?: string;
   Address?: string;
   dateOfIncorporation?: string;
+  DateOfIncorporation?: string;  // Add this - your raw data uses this format
   DateofIncorporation?: string;
   authorisedCapital?: string;
   AuthorisedCapital?: string;
   paidUpCapital?: string;
   PaidUpCapital?: string;
   ROC?: string;
+  RocName?: string;  // Add this - your raw data uses this format
+  RegistrationNumber?: string;  // Add this - your raw data uses this format
   registerationNumber?: string;
   whetherListedOrNot?: string;
+  CompanyListedOrNot?: string;  // Add this - your raw data uses this format
   state?: string;
   country?: string;
+  JsonData?: string | object;  // ADD THIS - This is the key missing field!
+  CompanyType?: string;  // Add this
+  CompanyOrigin?: string;  // Add this
+  CompanyCategory?: string;  // Add this
+  CompanySubCategory?: string;  // Add this
+  ClassOfCompany?: string;  // Add this
+  LlpStatus?: string;  // Add this
+  SubscribedCapital?: string;  // Add this
+  CompanyEmail?: string;  // Add this
+  Created_at?: string;  // Add this
+  CompanyStatus?: string;  // Add this
   [key: string]: any;
 }
 

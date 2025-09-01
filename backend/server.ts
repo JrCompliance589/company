@@ -75,6 +75,7 @@ async function initializeDatabase() {
         email VARCHAR(132) UNIQUE NOT NULL,
         password VARCHAR(255),
         is_verified TINYINT(1) DEFAULT 0,
+        is_admin TINYINT(1) DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -86,6 +87,7 @@ async function initializeDatabase() {
       const hasSessionActive = (columns as any[]).some(col => col.Field === 'session_active');
       const hasFirstName = (columns as any[]).some(col => col.Field === 'first_name');
       const hasFullName = (columns as any[]).some(col => col.Field === 'full_name');
+      const hasIsAdmin = (columns as any[]).some(col => col.Field === 'is_admin');
       
       // Add google_id if missing
       if (!hasGoogleId) {
@@ -97,6 +99,12 @@ async function initializeDatabase() {
       if (!hasSessionActive) {
         await connection.query('ALTER TABLE users_login ADD COLUMN session_active TINYINT(1) DEFAULT 0');
         console.log('✅ Added session_active column');
+      }
+      
+      // Add is_admin if missing
+      if (!hasIsAdmin) {
+        await connection.query('ALTER TABLE users_login ADD COLUMN is_admin TINYINT(1) DEFAULT 0');
+        console.log('✅ Added is_admin column');
       }
       
       // Remove first_name if it exists
@@ -125,6 +133,35 @@ async function initializeDatabase() {
   }
 }
 
+// Setup admin account
+async function setupAdminAccount() {
+  try {
+    const connection = await pool.getConnection();
+    
+    // Check if admin account already exists
+    const [existingAdmin] = await connection.query('SELECT * FROM users_login WHERE email = ?', ['admin@gmail.com']);
+    
+    if ((existingAdmin as any[]).length === 0) {
+      // Create admin account
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash('testing456', saltRounds);
+      
+      await connection.query(
+        'INSERT INTO users_login (full_name, email, password, is_verified, is_admin, session_active) VALUES (?, ?, ?, ?, ?, ?)',
+        ['Admin User', 'admin@gmail.com', hashedPassword, 1, 1, 0]
+      );
+      
+      console.log('✅ Admin account created: admin@gmail.com');
+    } else {
+      console.log('✅ Admin account already exists');
+    }
+    
+    connection.release();
+  } catch (error: any) {
+    console.error('❌ Failed to setup admin account:', error.message);
+  }
+}
+
 // Check if session_active column exists
 async function hasSessionActiveColumn(): Promise<boolean> {
   try {
@@ -138,7 +175,11 @@ async function hasSessionActiveColumn(): Promise<boolean> {
 
 // Initialize database on startup
 testConnection();
-initializeDatabase();
+initializeDatabase().then(() => {
+  // Setup admin account and orders table after database initialization is complete
+  setupAdminAccount();
+  initializeOrdersTable();
+});
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {
@@ -255,6 +296,7 @@ app.post('/api/signin', async (req: Request, res: Response) => {
         full_name: user.full_name,
         email: user.email,
         is_verified: user.is_verified,
+        is_admin: user.is_admin,
         created_at: user.created_at,
       },
     });
@@ -348,6 +390,367 @@ app.post('/api/logout', async (req: Request, res: Response) => {
   }
 });
 
+// Admin endpoints
+// Get all logged-in users (admin only)
+app.get('/api/admin/users', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Check if user is admin
+    const [users] = await pool.query('SELECT * FROM users_login WHERE email = ? AND is_admin = 1', [email]);
+    if ((users as any[]).length === 0) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    // Get all users with session status
+    const [allUsers] = await pool.query(`
+      SELECT 
+        id, 
+        full_name, 
+        email, 
+        is_verified, 
+        is_admin, 
+        session_active, 
+        created_at 
+      FROM users_login 
+      ORDER BY created_at DESC
+    `);
+
+    res.json({ users: allUsers });
+  } catch (error: any) {
+    console.error('❌ Admin users error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch users' });
+  }
+});
+
+// Get admin dashboard stats
+app.get('/api/admin/stats', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Check if user is admin
+    const [users] = await pool.query('SELECT * FROM users_login WHERE email = ? AND is_admin = 1', [email]);
+    if ((users as any[]).length === 0) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    // Get various stats
+    const [totalUsers] = await pool.query('SELECT COUNT(*) as count FROM users_login');
+    const [activeUsers] = await pool.query('SELECT COUNT(*) as count FROM users_login WHERE session_active = 1');
+    const [verifiedUsers] = await pool.query('SELECT COUNT(*) as count FROM users_login WHERE is_verified = 1');
+    const [recentUsers] = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM users_login 
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+    `);
+    const [totalOrders] = await pool.query('SELECT COUNT(*) as count FROM orders');
+    const [pendingOrders] = await pool.query('SELECT COUNT(*) as count FROM orders WHERE status = "pending"');
+    const [completedOrders] = await pool.query('SELECT COUNT(*) as count FROM orders WHERE status = "completed"');
+
+    res.json({
+      stats: {
+        totalUsers: (totalUsers as any[])[0].count,
+        activeUsers: (activeUsers as any[])[0].count,
+        verifiedUsers: (verifiedUsers as any[])[0].count,
+        recentUsers: (recentUsers as any[])[0].count,
+        totalOrders: (totalOrders as any[])[0].count,
+        pendingOrders: (pendingOrders as any[])[0].count,
+        completedOrders: (completedOrders as any[])[0].count,
+      }
+    });
+  } catch (error: any) {
+    console.error('❌ Admin stats error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch stats' });
+  }
+});
+
+// Manual admin creation endpoint (for development/testing)
+app.post('/api/admin/create', async (req: Request, res: Response) => {
+  try {
+    const { email, password, full_name } = req.body;
+    
+    if (!email || !password || !full_name) {
+      return res.status(400).json({ message: 'Email, password, and full_name are required' });
+    }
+
+    // Check if admin already exists
+    const [existingAdmin] = await pool.query('SELECT * FROM users_login WHERE email = ?', [email]);
+    if ((existingAdmin as any[]).length > 0) {
+      return res.status(400).json({ message: 'Admin account already exists' });
+    }
+
+    // Create admin account
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    
+    await pool.query(
+      'INSERT INTO users_login (full_name, email, password, is_verified, is_admin, session_active) VALUES (?, ?, ?, ?, ?, ?)',
+      [full_name, email, hashedPassword, 1, 1, 0]
+    );
+    
+    console.log('✅ Admin account created manually:', email);
+    res.status(201).json({ message: 'Admin account created successfully' });
+  } catch (error: any) {
+    console.error('❌ Manual admin creation error:', error.message);
+    res.status(500).json({ message: 'Failed to create admin account' });
+  }
+});
+
+// Initialize orders table
+async function initializeOrdersTable() {
+  try {
+    const connection = await pool.getConnection();
+    
+    // Create orders table if it doesn't exist
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS orders (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id VARCHAR(255) UNIQUE NOT NULL,
+        user_id INT,
+        user_email VARCHAR(255),
+        company_cin VARCHAR(255),
+        company_name VARCHAR(255),
+        status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending',
+        amount DECIMAL(10,2) DEFAULT 0.00,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users_login(id) ON DELETE SET NULL
+      )
+    `);
+    
+    console.log('✅ Orders table is ready');
+    connection.release();
+  } catch (error: any) {
+    console.error('❌ Orders table initialization error:', error.message);
+  }
+}
+
+// Create order endpoint (when user visits pricing from company page)
+app.post('/api/orders/create', async (req: Request, res: Response) => {
+  try {
+    const { user_id, user_email, company_cin, company_name } = req.body;
+    
+    if (!company_cin) {
+      return res.status(400).json({ message: 'Company CIN is required' });
+    }
+
+    // Generate order ID using CIN
+    const orderId = `ORDER-${company_cin}-${Date.now()}`;
+    
+    // Check if order already exists for this user and company on the same day
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    const [existingOrders] = await pool.query(
+      `SELECT * FROM orders 
+       WHERE user_id = ? 
+       AND company_cin = ? 
+       AND DATE(created_at) = ?`,
+      [user_id, company_cin, today]
+    );
+    
+    if ((existingOrders as any[]).length > 0) {
+      console.log('🔄 Duplicate order prevented for user:', user_email, 'company:', company_name, 'date:', today);
+      return res.status(200).json({ 
+        message: 'Order already exists for today',
+        order: (existingOrders as any[])[0],
+        isDuplicate: true
+      });
+    }
+
+    // Create new order
+    const [result] = await pool.query(
+      'INSERT INTO orders (order_id, user_id, user_email, company_cin, company_name, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [orderId, user_id, user_email, company_cin, company_name, 'pending']
+    );
+
+    console.log('✅ Order created:', orderId);
+    res.status(201).json({ 
+      message: 'Order created successfully',
+      order: {
+        id: (result as any).insertId,
+        order_id: orderId,
+        user_id,
+        user_email,
+        company_cin,
+        company_name,
+        status: 'pending'
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ Order creation error:', error.message);
+    res.status(500).json({ message: 'Failed to create order' });
+  }
+});
+
+// Get all orders (admin only)
+app.get('/api/admin/orders', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Check if user is admin
+    const [users] = await pool.query('SELECT * FROM users_login WHERE email = ? AND is_admin = 1', [email]);
+    if ((users as any[]).length === 0) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    // Get all orders with user details
+    const [orders] = await pool.query(`
+      SELECT 
+        o.id,
+        o.order_id,
+        o.user_id,
+        o.user_email,
+        o.company_cin,
+        o.company_name,
+        o.status,
+        o.amount,
+        o.created_at,
+        o.updated_at,
+        u.full_name as user_full_name
+      FROM orders o
+      LEFT JOIN users_login u ON o.user_id = u.id
+      ORDER BY o.created_at DESC
+        `);
+
+    res.json({ orders });
+  } catch (error: any) {
+    console.error('❌ Admin orders error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+});
+
+// Delete user (admin only)
+app.delete('/api/admin/users/:userId', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.query;
+    const { userId } = req.params;
+    
+    if (!email) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Check if user is admin
+    const [users] = await pool.query('SELECT * FROM users_login WHERE email = ? AND is_admin = 1', [email]);
+    if ((users as any[]).length === 0) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    // Check if user exists and is not an admin
+    const [targetUser] = await pool.query('SELECT * FROM users_login WHERE id = ?', [userId]);
+    if ((targetUser as any[]).length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if ((targetUser as any[])[0].is_admin) {
+      return res.status(403).json({ message: 'Cannot delete admin users' });
+    }
+
+    // Delete user
+    await pool.query('DELETE FROM users_login WHERE id = ?', [userId]);
+    
+    console.log('✅ User deleted:', userId);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error: any) {
+    console.error('❌ Delete user error:', error.message);
+    res.status(500).json({ message: 'Failed to delete user' });
+  }
+});
+
+// Test endpoint to check orders
+app.get('/api/test/orders', async (req: Request, res: Response) => {
+  try {
+    const [orders] = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    res.json({ 
+      message: 'Orders test endpoint',
+      count: (orders as any[]).length,
+      orders: orders 
+    });
+  } catch (error: any) {
+    console.error('❌ Test orders error:', error.message);
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+});
+
+// Cleanup duplicate orders (admin only)
+app.post('/api/admin/orders/cleanup', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Check if user is admin
+    const [users] = await pool.query('SELECT * FROM users_login WHERE email = ? AND is_admin = 1', [email]);
+    if ((users as any[]).length === 0) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    // Find and remove duplicate orders (keep the first one for each user-company-date combination)
+    const [duplicates] = await pool.query(`
+      DELETE o1 FROM orders o1
+      INNER JOIN orders o2 
+      WHERE o1.id > o2.id 
+      AND o1.user_id = o2.user_id 
+      AND o1.company_cin = o2.company_cin 
+      AND DATE(o1.created_at) = DATE(o2.created_at)
+    `);
+
+    console.log('🧹 Cleaned up duplicate orders');
+    res.json({ 
+      message: 'Duplicate orders cleaned up successfully',
+      deletedCount: (duplicates as any).affectedRows || 0
+    });
+  } catch (error: any) {
+    console.error('❌ Cleanup orders error:', error.message);
+    res.status(500).json({ message: 'Failed to cleanup orders' });
+  }
+});
+
+// Update order status (admin only)
+app.put('/api/admin/orders/:orderId/status', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.query;
+    const { orderId } = req.params;
+    const { status } = req.body;
+    
+    if (!email) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Check if user is admin
+    const [users] = await pool.query('SELECT * FROM users_login WHERE email = ? AND is_admin = 1', [email]);
+    if ((users as any[]).length === 0) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    if (!['pending', 'completed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    // Update order status
+    await pool.query('UPDATE orders SET status = ? WHERE order_id = ?', [status, orderId]);
+    
+    console.log('✅ Order status updated:', orderId, 'to', status);
+    res.json({ message: 'Order status updated successfully' });
+  } catch (error: any) {
+    console.error('❌ Update order status error:', error.message);
+    res.status(500).json({ message: 'Failed to update order status' });
+  }
+});
+
 // Start server
 const PORT = 3001;
 
@@ -360,5 +763,15 @@ app.listen(PORT, () => {
   console.log(`   POST http://localhost:${PORT}/api/signin`);
   console.log(`   POST http://localhost:${PORT}/api/signin/google`);
   console.log(`   POST http://localhost:${PORT}/api/logout`);
+  console.log(`   POST http://localhost:${PORT}/api/orders/create`);
+  console.log(`   GET  http://localhost:${PORT}/api/test/orders (test endpoint)`);
+  console.log(`   GET  http://localhost:${PORT}/api/admin/users (admin only)`);
+  console.log(`   GET  http://localhost:${PORT}/api/admin/stats (admin only)`);
+  console.log(`   GET  http://localhost:${PORT}/api/admin/orders (admin only)`);
+  console.log(`   DELETE http://localhost:${PORT}/api/admin/users/:id (admin only)`);
+  console.log(`   PUT http://localhost:${PORT}/api/admin/orders/:id/status (admin only)`);
+  console.log(`   POST http://localhost:${PORT}/api/admin/orders/cleanup (admin only)`);
+  console.log(`   POST http://localhost:${PORT}/api/admin/create (manual admin creation)`);
   console.log(`💾 Connected to database: ${dbConfig.database} at ${dbConfig.host}:${dbConfig.port}`);
+  console.log(`👑 Admin account: admin@gmail.com / testing456`);
 });

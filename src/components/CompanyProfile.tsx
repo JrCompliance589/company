@@ -4,6 +4,7 @@ import Breadcrumb from "./Breadcrumb";
 import CompanyHeader from "./CompanyHeader";
 import SidebarNav, { SidebarItem } from "./SidebarNav";
 import Footer from "./Footer";
+import Header from "./Header";
 
 import {
   Building2,
@@ -23,24 +24,23 @@ import CompanyDetails from "./CompanyDetails";
 import KeyIndicators from "./KeyIndicators";
 import Directors from "./Directors";
 import { Link } from "react-router-dom";
-import { useAuth } from "./AuthContext";
 import { meiliSearchService } from "../services/meiliSearch";
 import { processCompanyData, ProcessedCompanyData } from "../utils/companyUtils";
 
 const CompanyProfile: React.FC = () => {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { companyName, cin } = useParams<{ companyName: string; cin: string }>();
   const [signUpMode, setSignUpMode] = React.useState(false);
   const [companyData, setCompanyData] = useState<ProcessedCompanyData | null>(null);
+  const [rawData, setRawData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [active, setActive] = React.useState<string>("Overview");
 
   // Fetch company data when CIN is available
   useEffect(() => {
     const fetchCompanyData = async () => {
       if (!cin) {
-        // If no CIN, use default data (existing behavior)
         return;
       }
 
@@ -52,6 +52,7 @@ const CompanyProfile: React.FC = () => {
         if (data) {
           const processedData = processCompanyData(data);
           setCompanyData(processedData);
+          setRawData(data); // Save the raw data for Directors component
           console.log('Fetched company data:', processedData);
           console.log('Raw MeiliSearch data:', data);
           console.log('Date of Incorporation:', data.dateOfIncorporation);
@@ -73,10 +74,10 @@ const CompanyProfile: React.FC = () => {
   }, [cin]);
 
   const sidebarItems: SidebarItem[] = [
-    { label: "Overview", icon: Building2 },
-    { label: "Key Indicators", icon: TrendingUp },
-    { label: "Company Details", icon: FileText },
-    { label: "Directors", icon: Users },
+    { label: "Overview", icon: Building2, sectionId: "overview-section" },
+    { label: "Key Indicators", icon: TrendingUp, sectionId: "key-indicators-section" },
+    { label: "Company Details", icon: FileText, sectionId: "company-details-section" },
+    { label: "Directors", icon: Users, sectionId: "directors-section" },
     { label: "Financial", icon: DollarSign, locked: true },
     { label: "Shareholding", icon: GitCompare, locked: true },
     { label: "Charges", icon: Scale, locked: true },
@@ -91,34 +92,79 @@ const CompanyProfile: React.FC = () => {
     { label: "Documents", icon: FolderOpen, locked: true },
   ];
 
-  const [active, setActive] = React.useState<string>("Overview");
-
   const handleNavigate = (label: string) => {
-    const el = document.getElementById(label.replace(/\s+/g, "-"));
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Map labels to section IDs
+    const sectionMapping: { [key: string]: string } = {
+      "Overview": "overview-section",
+      "Key Indicators": "key-indicators-section", 
+      "Company Details": "company-details-section",
+      "Directors": "directors-section"
+    };
+    
+    const sectionId = sectionMapping[label];
+    if (sectionId) {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
+    
+    setActive(label);
   };
 
+  // Scroll detection effect
   React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActive(entry.target.getAttribute("data-section") || "");
-          }
-        });
-      },
-      { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
-    );
+    const handleScroll = () => {
+      const sections = [
+        { label: "Overview", id: "overview-section" },
+        { label: "Key Indicators", id: "key-indicators-section" },
+        { label: "Company Details", id: "company-details-section" },
+        { label: "Directors", id: "directors-section" }
+      ];
 
-    const sections = document.querySelectorAll<HTMLElement>("[data-section]");
-    sections.forEach((sec) => observer.observe(sec));
+      const scrollPosition = window.scrollY + 150; // Offset for better UX
+      let currentSection = "Overview";
+
+      for (const section of sections) {
+        const element = document.getElementById(section.id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const elementTop = window.scrollY + rect.top;
+
+          if (scrollPosition >= elementTop) {
+            currentSection = section.label;
+          } else {
+            break;
+          }
+        }
+      }
+
+      if (currentSection !== active) {
+        setActive(currentSection);
+      }
+    };
+
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', throttledHandleScroll);
+    
+    // Initial check
+    handleScroll();
 
     return () => {
-      sections.forEach((sec) => observer.unobserve(sec));
+      window.removeEventListener('scroll', throttledHandleScroll);
     };
-  }, []);
+  }, [active]);
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -163,53 +209,7 @@ const CompanyProfile: React.FC = () => {
 
   return (
     <div className="min-h-screen gradient-secondary">
-      <header
-        className="sticky top-0 w-full text-white shadow-xl border-b border-slate-700/50 z-50"
-        style={{ background: "linear-gradient(45deg, #1a1054, #255ff1)" }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <a
-                href="/"
-                className="hover:opacity-90 transition-opacity duration-200"
-              >
-                <img
-                  src="/veri.png"
-                  alt="Veriffyvista"
-                  style={{ height: "150px", width: "150px" }}
-                  className="object-contain"
-                />
-              </a>
-            </div>
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm font-medium text-white">
-                  User ID: {user.id}
-                </span>
-                <button
-                  onClick={() => {
-                    logout();
-                    navigate("/signin");
-                  }}
-                  className="hidden sm:inline-flex bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 shadow-sm"
-                >
-                  Log Out
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() =>
-                  navigate(signUpMode ? "/signin" : "/signin?mode=signup")
-                }
-                className="hidden sm:inline-flex bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 shadow-sm"
-              >
-                {signUpMode ? "Sign In" : "Sign Up"}
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header />
       <Breadcrumb items={breadcrumbItems} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -222,14 +222,15 @@ const CompanyProfile: React.FC = () => {
               items={sidebarItems}
               activeLabel={active}
               onNavigate={handleNavigate}
+              companyCIN={cin}
+              companyName={companyData?.companyName || companyName}
             />
           </div>
 
           {/* Main Content */}
           <div className="order-1 lg:order-2 lg:col-span-3 space-y-6 sm:space-y-8">
             <section
-              id="Overview"
-              data-section="Overview"
+              id="overview-section"
               className="scroll-mt-24"
             >
               <AboutSection companyData={companyData} />
@@ -237,25 +238,26 @@ const CompanyProfile: React.FC = () => {
 
             <section className="space-y-6 sm:space-y-8">
               <div
-                id="Key-Indicators"
-                data-section="Key Indicators"
+                id="key-indicators-section"
                 className="scroll-mt-24"
               >
                 <KeyIndicators companyData={companyData} />
               </div>
               <div
-                id="Company-Details"
-                data-section="Company Details"
+                id="company-details-section"
                 className="scroll-mt-24"
               >
-                <CompanyDetails companyData={companyData} />
+                <CompanyDetails 
+                  companyData={companyData} 
+                  companyCIN={cin}
+                  companyName={companyData?.companyName || companyName}
+                />
               </div>
               <div
-                id="Directors"
-                data-section="Directors"
+                id="directors-section"
                 className="scroll-mt-24"
               >
-                <Directors />
+                <Directors rawData={rawData} />
               </div>
             </section>
           </div>
@@ -373,7 +375,6 @@ const CompanyProfile: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Footer here - after the floating CTA */}
       <Footer />
     </div>
   );
