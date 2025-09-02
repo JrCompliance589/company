@@ -70,7 +70,7 @@ const Pricing: React.FC = () => {
       });
 
       if (response.ok) {
-        console.log('Order created successfully for company:', companyName);
+        //console.log('Order created successfully for company:', companyName);
       } else {
         console.error('Failed to create order');
       }

@@ -70,7 +70,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   const handleResultClick = (result: SearchResult, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('SearchDropdown: Button clicked:', result);
+    //console.log('SearchDropdown: Button clicked:', result);
     onSelectResult(result);
   };
 
@@ -186,7 +186,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('SearchDropdown: Div clicked:', result);
+                    //console.log('SearchDropdown: Div clicked:', result);
                     handleResultClick(result, e);
                   }}
                   onKeyDown={onKeyDown}

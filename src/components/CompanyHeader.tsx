@@ -7,7 +7,7 @@ interface CompanyHeaderProps {
 }
 
 const CompanyHeader: React.FC<CompanyHeaderProps> = ({ companyData }) => {
-  console.log('CompanyHeader received companyData:', companyData);
+  //console.log('CompanyHeader received companyData:', companyData);
   return (
     <div className="card-elevated p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
@@ -41,8 +41,18 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({ companyData }) => {
             </div>
 
             <p className="text-gray-600 mb-3 md:mb-4 leading-relaxed text-sm sm:text-base">
-              {companyData?.address || 'A leading automotive public limited company based in Jabalpur, Madhya Pradesh, India, established in 1979. Specializing in commercial vehicles & fleet manufacturing.'}
-            </p>
+  A leading{' '}
+  {companyData?.classOfCompany
+    ? companyData.classOfCompany.toLowerCase().includes('public')
+      ? 'public limited company'
+      : companyData.classOfCompany.toLowerCase().includes('private')
+        ? 'private limited company'
+        : companyData.classOfCompany.toLowerCase()
+    : 'limited company'}{' '}
+  based in {companyData?.location || 'Jabalpur, Madhya Pradesh, India'}, established in{' '}
+  {companyData?.formattedIncorporationDate || '1979'}.
+</p>
+
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm text-gray-500">
               <div className="flex items-center space-x-2">

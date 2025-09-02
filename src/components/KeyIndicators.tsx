@@ -95,14 +95,14 @@ const KeyIndicators: React.FC<KeyIndicatorsProps> = ({ companyData }) => {
 />
         <IndicatorCard
           title="Last Filing with ROC"
-          value="31 Mar 2024"
+          value="Not available"
           icon={<FileText className="h-6 w-6" />}
           trend="up"
           className="sm:col-span-1 lg:col-span-1"
         />
         <IndicatorCard
           title="Open Charges"
-          value="₹2,843.73 Cr"
+          value={companyData?.formattedOpenCharges || "₹0"}
           icon={<TrendingUp className="h-6 w-6" />}
           trend="up"
           className="sm:col-span-1 lg:col-span-1"

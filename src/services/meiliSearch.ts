@@ -58,7 +58,7 @@ class MeiliSearchService {
     }
 
     try {
-      console.log('Searching MeiliSearch with query:', query);
+      //console.log('Searching MeiliSearch with query:', query);
       
       const response = await fetch(`${this.baseUrl}/indexes/${this.indexName}/search`, {
         method: 'POST',
@@ -76,7 +76,7 @@ class MeiliSearchService {
         }),
       });
 
-      console.log('MeiliSearch response status:', response.status);
+      //console.log('MeiliSearch response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -85,7 +85,7 @@ class MeiliSearchService {
       }
 
       const data: SearchResponse = await response.json();
-      console.log('MeiliSearch response data:', data);
+      //console.log('MeiliSearch response data:', data);
       
       return data.hits || [];
     } catch (error) {
@@ -100,7 +100,7 @@ class MeiliSearchService {
     }
 
     try {
-      console.log('Fetching company by CIN:', cin);
+      //console.log('Fetching company by CIN:', cin);
       
       const response = await fetch(`${this.baseUrl}/indexes/${this.indexName}/search`, {
         method: 'POST',
@@ -117,7 +117,7 @@ class MeiliSearchService {
         }),
       });
 
-      console.log('MeiliSearch CIN search response status:', response.status);
+      //console.log('MeiliSearch CIN search response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -126,7 +126,7 @@ class MeiliSearchService {
       }
 
       const data: SearchResponse = await response.json();
-      console.log('MeiliSearch CIN search response data:', data);
+      //console.log('MeiliSearch CIN search response data:', data);
       
       return data.hits && data.hits.length > 0 ? data.hits[0] : null;
     } catch (error) {
@@ -179,7 +179,7 @@ class MeiliSearchService {
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Index info:', data);
+        //console.log('Index info:', data);
         return data;
       }
     } catch (error) {

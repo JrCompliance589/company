@@ -17,7 +17,7 @@ const MeiliSearchDebug: React.FC = () => {
     try {
       const searchResults = await meiliSearchService.search(testQuery, 5);
       setResults(searchResults);
-      console.log('Search results:', searchResults);
+      //console.log('Search results:', searchResults);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       console.error('Search failed:', err);
@@ -31,7 +31,7 @@ const MeiliSearchDebug: React.FC = () => {
     try {
       const info = await meiliSearchService.getIndexInfo();
       setIndexInfo(info);
-      console.log('Index info:', info);
+      //console.log('Index info:', info);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get index info');
     } finally {
@@ -45,7 +45,7 @@ const MeiliSearchDebug: React.FC = () => {
       const isConnected = await meiliSearchService.testConnection();
       if (isConnected) {
         setError('');
-        console.log('✅ MeiliSearch connection successful');
+        //console.log('✅ MeiliSearch connection successful');
       } else {
         setError('❌ MeiliSearch connection failed');
       }

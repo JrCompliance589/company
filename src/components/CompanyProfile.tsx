@@ -53,11 +53,11 @@ const CompanyProfile: React.FC = () => {
           const processedData = processCompanyData(data);
           setCompanyData(processedData);
           setRawData(data); // Save the raw data for Directors component
-          console.log('Fetched company data:', processedData);
-          console.log('Raw MeiliSearch data:', data);
-          console.log('Date of Incorporation:', data.dateOfIncorporation);
-          console.log('State:', data.state);
-          console.log('Country:', data.country);
+          //console.log('Fetched company data:', processedData);
+          //console.log('Raw MeiliSearch data:', data);
+          //console.log('Date of Incorporation:', data.dateOfIncorporation);
+          //console.log('State:', data.state);
+          //console.log('Country:', data.country);
         } else {
           setError('Company not found');
           console.log('Company not found for CIN:', cin);
@@ -233,7 +233,9 @@ const CompanyProfile: React.FC = () => {
               id="overview-section"
               className="scroll-mt-24"
             >
-              <AboutSection companyData={companyData} />
+              <AboutSection companyData={companyData} 
+                rawData={rawData}  
+/>
             </section>
 
             <section className="space-y-6 sm:space-y-8">

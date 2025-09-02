@@ -16,6 +16,11 @@ export interface ProcessedCompanyData {
   formattedAuthorisedCapital: string;
   formattedPaidUpCapital: string;
   location: string;
+  classOfCompany: string;
+  openCharges: string;
+  settledLoans: string;
+  formattedOpenCharges: string;
+  formattedSettledLoans: string;
 }
 
 export interface DirectorData {
@@ -173,6 +178,51 @@ export const formatCurrency = (amount: string): string => {
   }
 };
 
+export const processChargesData = (data: SearchResult): { openCharges: number; settledLoans: number } => {
+  let openChargesTotal = 0;
+  let settledLoansTotal = 0;
+
+  try {
+    let parsedJsonData: any;
+    
+    // Parse JsonData if it's a string
+    if (typeof data.JsonData === 'string') {
+      parsedJsonData = JSON.parse(data.JsonData);
+    } else {
+      parsedJsonData = data.JsonData;
+    }
+
+    // Try different possible paths for charges data
+    const chargesData = parsedJsonData?.indexChargesData || 
+                       parsedJsonData?.companyData?.indexChargesData ||
+                       parsedJsonData?.indexcharges ||
+                       parsedJsonData?.companyData?.indexcharges;
+
+    //console.log('Processing charges data:', chargesData);
+
+    if (Array.isArray(chargesData)) {
+      chargesData.forEach((charge: any) => {
+        const amount = parseFloat(charge.amount || '0');
+        const status = (charge.chargeStatus || '').toLowerCase();
+        
+        //console.log(`Charge: ${charge.chargeHolderName}, Amount: ${amount}, Status: ${status}`);
+        
+        if (status === 'open' || status === 'active') {
+          openChargesTotal += amount;
+        } else if (status === 'closed' || status === 'satisfied') {
+          settledLoansTotal += amount;
+        }
+      });
+    }
+
+    //console.log(`Total open charges: ${openChargesTotal}, Total settled loans: ${settledLoansTotal}`);
+  } catch (error) {
+    console.error('Error processing charges data:', error);
+  }
+
+  return { openCharges: openChargesTotal, settledLoans: settledLoansTotal };
+};
+
 export const processDirectorsData = (data: SearchResult): DirectorData[] => {
   // console.log('Processing directors data from:', data);
   
@@ -242,7 +292,7 @@ export const processCompanyData = (data: SearchResult): ProcessedCompanyData => 
   const cin = data.CIN || '';
   const address = data.Address || '';
   const dateOfIncorporation = data.DateOfIncorporation || data.dateOfIncorporation || data.DateofIncorporation || data.date_of_incorporation || 'N/A';
-  console.log('Raw MeiliSearch data:', JSON.stringify(data, null, 2));
+  //console.log('Raw MeiliSearch data:', JSON.stringify(data, null, 2));
   // console.log('Raw dateOfIncorporation fields:', {
   //   DateOfIncorporation: data.DateOfIncorporation,
   //   dateOfIncorporation: data.dateOfIncorporation,
@@ -256,6 +306,12 @@ export const processCompanyData = (data: SearchResult): ProcessedCompanyData => 
   const roc = data.RocName || data.rocName || data.roc || '';
   const registrationNumber = data.RegistrationNumber || data.registerationNumber || data.registrationNumber || '';
   const listingStatus = data.whetherListedOrNot === 'Y' ? 'Listed' : data.whetherListedOrNot === 'N' ? 'Not Listed' : '';
+  
+  // Extract ClassOfCompany field
+  const classOfCompany = data.ClassOfCompany || '';
+
+  // Process charges data
+  const chargesInfo = processChargesData(data);
 
   // Parse JsonData string and handle MCAMDSCompanyAddress array safely
   let addressData: any = {};
@@ -305,6 +361,8 @@ export const processCompanyData = (data: SearchResult): ProcessedCompanyData => 
   // console.log('Age data:', ageData);
   const formattedAuthorisedCapital = formatCurrency(authorisedCapital);
   const formattedPaidUpCapital = formatCurrency(paidUpCapital);
+  const formattedOpenCharges = formatCurrency(chargesInfo.openCharges.toString());
+  const formattedSettledLoans = formatCurrency(chargesInfo.settledLoans.toString());
 
   return {
     companyName,
@@ -321,6 +379,11 @@ export const processCompanyData = (data: SearchResult): ProcessedCompanyData => 
     formattedIncorporationDate,
     formattedAuthorisedCapital,
     formattedPaidUpCapital,
-    location
+    location,
+    classOfCompany,
+    openCharges: chargesInfo.openCharges.toString(),
+    settledLoans: chargesInfo.settledLoans.toString(),
+    formattedOpenCharges,
+    formattedSettledLoans
   };
 };

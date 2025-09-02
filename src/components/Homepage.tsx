@@ -35,7 +35,7 @@ const Homepage: React.FC = () => {
       console.error('Search error:', error);
       setSearchResults([]);
       // Show error message to user
-      console.log('MeiliSearch connection failed. Please check if the service is running.');
+      //console.log('MeiliSearch connection failed. Please check if the service is running.');
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +59,7 @@ const Homepage: React.FC = () => {
 
   // Handle result selection - Updated with debugging and proper navigation
   const handleSelectResult = (result: SearchResult) => {
-    console.log('Homepage: handleSelectResult called with:', result);
+    //console.log('Homepage: handleSelectResult called with:', result);
     
     setSearchQuery(result.CompanyName || result.company_name || result.name || '');
     setShowDropdown(false);
@@ -73,14 +73,14 @@ const Homepage: React.FC = () => {
         .replace(/^-+|-+$/g, '');
       
       const navigationUrl = `/company/${companyNameSlug}/${result.CIN}`;
-      console.log('Homepage: Navigating to:', navigationUrl);
+      //console.log('Homepage: Navigating to:', navigationUrl);
       
       // Use setTimeout to ensure state updates complete before navigation
       setTimeout(() => {
         window.location.href = navigationUrl;
       }, 100);
     } else {
-      console.log('Homepage: No CIN found, navigating to default');
+      //console.log('Homepage: No CIN found, navigating to default');
       // Fallback to default company page if no CIN
       setTimeout(() => {
         window.location.href = '/company';
@@ -108,7 +108,7 @@ const Homepage: React.FC = () => {
       case 'Enter':
         e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
-          console.log('Homepage: Enter key pressed, selecting result:', searchResults[selectedIndex]);
+          //console.log('Homepage: Enter key pressed, selecting result:', searchResults[selectedIndex]);
           handleSelectResult(searchResults[selectedIndex]);
         }
         break;
