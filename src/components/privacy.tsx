@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import Footer from "./Footer";
+import Breadcrumb from "./Breadcrumb";
 
 const PrivacyPolicy: React.FC = () => {
   const { user, logout } = useAuth();
@@ -154,6 +155,7 @@ const PrivacyPolicy: React.FC = () => {
           </div>
         </div>
       </header>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Privacy Policy' }]} />
 
       {/* Page Title */}
       <div

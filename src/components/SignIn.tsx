@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { useAuth } from './AuthContext';
+import Breadcrumb from './Breadcrumb';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
@@ -321,6 +322,7 @@ const SignIn: React.FC = () => {
           </div>
         </div>
       </header>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: signUpMode ? 'Sign Up' : 'Sign In' }]} />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

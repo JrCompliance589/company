@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { CheckCircle2, Star, Zap, Shield, Download, Users, Clock, ArrowRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import Breadcrumb from './Breadcrumb';
+import Header from './Header';
 
 const tiers = [
   {
@@ -81,9 +83,11 @@ const Pricing: React.FC = () => {
 
   return (
     <div className="min-h-screen gradient-secondary">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <Header />
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Pricing' }]} />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-10 sm:mb-14">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
           <p className="text-xl text-gray-600 mb-8">Flexible options crafted for individual and team needs.</p>
           <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full mx-auto"></div>
@@ -151,7 +155,7 @@ const Pricing: React.FC = () => {
         </div>
 
         {/* Additional Info */}
-        <div className="mt-16 text-center">
+        <div className="mt-12 sm:mt-16 text-center">
           <div className="card p-8 max-w-3xl mx-auto">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Why Choose Verifyvista?</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
@@ -179,7 +183,7 @@ const Pricing: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

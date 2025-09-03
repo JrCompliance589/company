@@ -5,6 +5,7 @@ import { meiliSearchService, SearchResult } from '../services/meiliSearch';
 import SearchDropdown from './SearchDropdown';
 import Header from './Header';
 import Footer from './Footer';
+//import BreadcrumbReviews from './BreadcrumbReviews';
 
 const Homepage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -179,7 +180,7 @@ const Homepage: React.FC = () => {
     {
       icon: <Shield className="h-8 w-8 text-red-600" />,
       title: "Stay Ahead of Risks & Opportunities",
-      description: "Be the first to spot changes that impact your key partners and prospects.",
+      description: "Be the first to spot changes that impact your key partners and prospects and always stay ahead of them.",
       image: "https://images.pexels.com/photos/590020/pexels-photo-590020.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop"
     }
   ];
@@ -208,6 +209,8 @@ const Homepage: React.FC = () => {
     <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #1a1054, #255ff1)" }}>
       {/* Header Component */}
       <Header />
+      {/* Reviews Breadcrumb Strip 
+      <BreadcrumbReviews /> */}
       
       {/* Hero Section */}
       <div className="relative overflow-hidden">

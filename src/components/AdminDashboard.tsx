@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Users, BarChart3, Activity, UserCheck, Clock, Shield, Trash2, Plus, ShoppingCart, Eye, CheckCircle, XCircle, LogOut } from 'lucide-react';
+import Breadcrumb from './Breadcrumb';
 
 interface User {
   id: number;
@@ -262,6 +263,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Admin', href: '/admin' }, { label: activeTab.charAt(0).toUpperCase() + activeTab.slice(1) }]} />
 
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

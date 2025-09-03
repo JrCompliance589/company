@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Scale, FileText, AlertTriangle, Shield, CreditCard, Users, Globe, CheckCircle, Lock } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import Footer from './Footer';
+import Breadcrumb from './Breadcrumb';
 
 const TermsOfService: React.FC = () => {
   const { user, logout } = useAuth();
@@ -106,6 +107,7 @@ const TermsOfService: React.FC = () => {
           </div>
         </div>
       </header>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Terms & Conditions' }]} />
 
       {/* Page Header */}
       <div className="text-white py-16" style={{ background: "linear-gradient(135deg, #1a1054, #255ff1)" }}>
