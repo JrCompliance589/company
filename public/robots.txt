@@ -1,0 +1,43 @@
+# robots.txt for Verifyvista - Company Profile & Business Intelligence Platform
+# Last updated: 2025
+
+User-agent: *
+
+# Block admin and dashboard access
+Disallow: /admin/
+Disallow: /dashboard/
+
+# Block authentication and user management
+Disallow: /signin
+Disallow: /signup
+Disallow: /login
+Disallow: /register
+Disallow: /logout
+Disallow: /auth/
+Disallow: /user/
+Disallow: /profile/
+
+# Block API endpoints and internal services
+Disallow: /api/
+Disallow: /internal/
+
+# Block e-commerce and payment sections
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /orders/
+Disallow: /billing/
+
+# Block search and debug pages
+Disallow: /search
+Disallow: /debug/
+Disallow: /test/
+Disallow: /staging/
+
+# Block temporary and development files
+Disallow: /temp/
+Disallow: /dev/
+Disallow: /beta/
+
+# Sitemap
+Sitemap: https://verifyvista.com/sitemap.xml

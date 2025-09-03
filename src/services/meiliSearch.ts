@@ -187,6 +187,38 @@ class MeiliSearchService {
     }
     return null;
   }
+
+  // Method to get all companies for sitemap generation
+  async getAllCompanies(limit: number = 10000): Promise<SearchResult[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/indexes/${this.indexName}/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          q: '', // Empty query to get all companies
+          limit: limit,
+          attributesToRetrieve: ['CompanyName', 'CIN', 'Created_at', 'DateOfIncorporation'],
+          filter: null,
+          sort: null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`MeiliSearch API error: ${response.status} - ${response.statusText}`, errorText);
+        throw new Error(`MeiliSearch API error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data: SearchResponse = await response.json();
+      return data.hits || [];
+    } catch (error) {
+      console.error('MeiliSearch getAllCompanies error:', error);
+      throw error;
+    }
+  }
 }
 
 export const meiliSearchService = new MeiliSearchService();
