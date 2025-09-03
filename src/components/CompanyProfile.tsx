@@ -26,6 +26,7 @@ import Directors from "./Directors";
 import { Link } from "react-router-dom";
 import { meiliSearchService } from "../services/meiliSearch";
 import { processCompanyData, ProcessedCompanyData } from "../utils/companyUtils";
+import { setCompanyPageSEO } from "../utils/seo";
 
 const CompanyProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -72,6 +73,20 @@ const CompanyProfile: React.FC = () => {
 
     fetchCompanyData();
   }, [cin]);
+
+  // Update SEO tags once we have either URL param name or fetched company data
+  useEffect(() => {
+    const nameForSeo = companyData?.companyName || companyName;
+    if (!nameForSeo) return;
+    setCompanyPageSEO({
+      name: nameForSeo,
+      cin: cin,
+      description: companyData?.listingStatus || undefined,
+      state: companyData?.location,
+      industry: companyData?.classOfCompany || undefined,
+      logoUrl: "/veri.png",
+    });
+  }, [companyData, companyName, cin]);
 
   const sidebarItems: SidebarItem[] = [
     { label: "Overview", icon: Building2, sectionId: "overview-section" },

@@ -75,9 +75,9 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData, companyCIN
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2">
       {/* Contact Information */}
-      <div className="card-elevated p-8 relative overflow-hidden">
+      <div className="card-elevated p-2 relative overflow-hidden">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Contact Information</h3>
@@ -120,10 +120,10 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData, companyCIN
         {isContactLocked && (
           <>
             {/* Center overlay */}
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm px-4 sm:px-8 text-center">
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm px-4 text-center">
               <div className="flex items-center space-x-2 text-gray-700 mb-3">
-                <Lock className="h-5 w-5" />
-                <span className="font-semibold">Contact information locked</span>
+                <Lock className="h-2 w-2 sm:h-5 sm:w-5" />
+                <span className="text-sm sm:text-base font-semibold">Contact information locked</span>
               </div>
               <button 
                 onClick={handlePricingClick}
@@ -131,13 +131,13 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ companyData, companyCIN
               >
                 Get instant access
               </button>
-              <p className="text-xs sm:text-sm text-gray-600 mt-2">Reveal email, phone, website and more</p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">Reveal email, phone, website and more</p>
             </div>
 
             {/* Bottom message bar (like preview screenshot) */}
             <div className="absolute left-0 right-0 bottom-0 z-20 bg-white/95 border-t border-gray-200">
-              <div className="px-3 py-2 sm:px-4 sm:py-3">
-                <div className="flex flex-col items-center gap-1 sm:flex-row sm:justify-center sm:gap-2">
+              <div className="px-3 py-1.5 sm:px-4 sm:py-3">
+                <div className="flex flex-col items-center gap-0.5 sm:flex-row sm:justify-center sm:gap-2">
                   <span className="text-center text-xs sm:text-sm text-gray-700">Reveal contact details and communication channels -</span>
                   <button onClick={handlePricingClick} className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-semibold underline-offset-2 hover:underline">Get instant access now!</button>
                 </div>
