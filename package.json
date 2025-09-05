@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview --host",
+    "preview": "vite preview --host --port 3003",
     "test-meilisearch": "node scripts/test-meilisearch.js",
     "generate-sitemap": "node scripts/generate-sitemap.js"
   },
