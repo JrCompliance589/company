@@ -1,0 +1,43 @@
+# llm.txt for Verifyvista - Company Profile & Business Intelligence Platform
+# Purpose: Control how Large Language Models (LLMs) may crawl, train, or use Verifyvista data
+# Last updated: 2025
+
+# General policy
+Allow: /
+
+# Disallow sensitive or non-public areas
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /signin
+Disallow: /signup
+Disallow: /login
+Disallow: /register
+Disallow: /logout
+Disallow: /auth/
+Disallow: /user/
+Disallow: /profile/
+Disallow: /api/
+Disallow: /internal/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /orders/
+Disallow: /billing/
+Disallow: /search
+Disallow: /debug/
+Disallow: /test/
+Disallow: /staging/
+Disallow: /temp/
+Disallow: /dev/
+Disallow: /beta/
+
+# Guidance for AI crawlers
+# You may use public company profiles and business intelligence summaries for indexing.
+# You may NOT use Verifyvista content for model training without explicit written permission.
+
+# Contact
+Contact: support@verifyvista.com
+
+# Legal
+Terms: https://verifyvista.com/terms
+Privacy: https://verifyvista.com/privacy
