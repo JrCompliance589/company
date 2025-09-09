@@ -1,15 +1,23 @@
-import React from 'react';
+import React, {useEffect , useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Scale, FileText, AlertTriangle, Shield, CreditCard, Users, Globe, CheckCircle, Lock } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import Footer from './Footer';
 import Breadcrumb from './Breadcrumb';
+import { use } from 'framer-motion/client';
 
 const TermsOfService: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [signUpMode, setSignUpMode] = React.useState(false);
+  const [loading, setLoading] = useState(true);
   const lastUpdated = "January 15, 2025";
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const sections = [
     {

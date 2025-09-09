@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect , useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Ban, AlertTriangle, Scale } from 'lucide-react';
 import { useAuth } from './AuthContext';
@@ -9,7 +9,14 @@ const RefundPolicy: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [signUpMode, setSignUpMode] = React.useState(false);
+  const [loading, setLoading] = useState(true);
   const lastUpdated = "January 15, 2025";
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
