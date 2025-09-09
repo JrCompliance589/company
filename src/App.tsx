@@ -8,6 +8,9 @@ import SignIn from './components/SignIn';
 import PrivacyPolicy from './components/privacy';
 import TermsOfService from './components/terms';
 import AdminDashboard from './components/AdminDashboard';
+import ResetPassword from './components/ResetPassword';
+import VerifyEmail from './components/VerifyEmail';
+import RefundPolicy from './components/RefundPolicy';
 
 const App: React.FC = () => {
   return (
@@ -24,6 +27,9 @@ const App: React.FC = () => {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<AdminDashboard />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
         </Routes>
       </Router>
     </AuthProvider>

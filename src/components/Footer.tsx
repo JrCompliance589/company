@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
     ],
     support: [
       { name: 'Help Center', href: '/help' },
-      { name: 'API Documentation', href: '/api' },
+      { name: 'Cancellation and Refunds', href: '/refund-policy' },
       { name: 'Privacy Policy', href: '/privacy' },
       { name: 'Terms of Service', href: '/terms' },
     ],

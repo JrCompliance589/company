@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Mail, ArrowLeft } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import Breadcrumb from './Breadcrumb';
 
@@ -14,11 +14,16 @@ const SignIn: React.FC = () => {
     const params = new URLSearchParams(location.search);
     return params.get('mode') === 'signup';
   });
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [resendVerificationMode, setResendVerificationMode] = useState(false);
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [resendVerificationEmail, setResendVerificationEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Decode JWT payload (base64) - for development only, not secure
+  // Decode JWT payload (base64) 
   const decodeJwtPayload = (token: string) => {
     try {
       const base64Url = token.split('.')[1];
@@ -51,9 +56,8 @@ const SignIn: React.FC = () => {
       google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: async (response: any) => {
-          console.log('Google Sign-In response:', response); // Debug log
+          console.log('Google Sign-In response:', response);
           try {
-            // Decode the credential to extract email, name, and sub
             const payload = decodeJwtPayload(response.credential);
             if (!payload || !payload.email || !payload.sub) {
               setError('Invalid Google Sign-In response');
@@ -90,10 +94,9 @@ const SignIn: React.FC = () => {
             }
 
             setSuccess('Google Sign-In successful! Welcome back.');
-            setUser(data.user); // Store user in context
+            setUser(data.user);
             setFormData({ fullName: '', email: '', password: '' });
             
-            // Redirect admin users to admin dashboard, others to homepage
             if (data.user.is_admin) {
               navigate('/admin');
             } else {
@@ -106,7 +109,7 @@ const SignIn: React.FC = () => {
           }
         },
       });
-      if (googleDivRef.current) {
+      if (googleDivRef.current && !forgotPasswordMode && !resendVerificationMode) {
         google.accounts.id.renderButton(googleDivRef.current, {
           theme: 'filled',
           size: 'large',
@@ -120,12 +123,102 @@ const SignIn: React.FC = () => {
     return () => {
       document.body.removeChild(script);
     };
-  }, [navigate, setUser]);
+  }, [navigate, setUser, forgotPasswordMode, resendVerificationMode]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
     setSuccess('');
+  };
+
+  const handleForgotPasswordEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForgotPasswordEmail(e.target.value);
+    setError('');
+    setSuccess('');
+  };
+
+  const handleResendVerificationEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setResendVerificationEmail(e.target.value);
+    setError('');
+    setSuccess('');
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotPasswordEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotPasswordEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotPasswordEmail }),
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Failed to send reset email. Please try again.');
+        return;
+      }
+
+      setSuccess('If an account with that email exists, we have sent a password reset link. Please check your email.');
+      setForgotPasswordEmail('');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to connect to the server.';
+      setError(errorMessage);
+      console.error('Forgot password error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resendVerificationEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resendVerificationEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resendVerificationEmail }),
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Failed to resend verification email. Please try again.');
+        return;
+      }
+
+      setSuccess('Verification email sent successfully. Please check your inbox.');
+      setResendVerificationEmail('');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to connect to the server.';
+      setError(errorMessage);
+      console.error('Resend verification error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -143,6 +236,7 @@ const SignIn: React.FC = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       const response = await fetch('/api/signup', {
         method: 'POST',
@@ -171,46 +265,17 @@ const SignIn: React.FC = () => {
         return;
       }
 
-      setSuccess('Sign up successful! Welcome to Verifyvista!');
+      setSuccess('Sign up successful! Please check your email to verify your account.');
       setFormData({ fullName: '', email: '', password: '' });
       setSignUpMode(false);
-      
-      // Automatically log the user in after successful signup
-      try {
-        const signInResponse = await fetch('/api/signin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-          credentials: 'include',
-        });
-
-        const signInData = await signInResponse.json();
-        
-        if (signInResponse.ok) {
-          setUser(signInData.user); // Store user in context
-          
-          // Redirect based on user type
-          if (signInData.user.is_admin) {
-            navigate('/admin');
-          } else {
-            navigate('/');
-          }
-        } else {
-          // If auto-login fails, redirect to homepage anyway
-          navigate('/');
-        }
-      } catch (err) {
-        console.error('Auto-login after signup failed:', err);
-        // Redirect to homepage even if auto-login fails
-        navigate('/');
-      }
+      setResendVerificationMode(true);
+      setResendVerificationEmail(formData.email);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect to the server.';
       setError(errorMessage);
       console.error('Fetch error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -221,6 +286,7 @@ const SignIn: React.FC = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       const response = await fetch('/api/signin', {
         method: 'POST',
@@ -244,28 +310,70 @@ const SignIn: React.FC = () => {
       }
 
       if (!response.ok) {
-        setError(data.message || `Server error: ${response.status} - ${response.statusText}`);
+        if (data.message.includes('Please verify your email')) {
+          setResendVerificationMode(true);
+          setResendVerificationEmail(formData.email);
+          setError(data.message);
+        } else {
+          setError(data.message || `Server error: ${response.status} - ${response.statusText}`);
+        }
         return;
       }
 
-                  setSuccess('Sign in successful! Welcome back.');
-            setUser(data.user); // Store user in context
-            setFormData({ fullName: '', email: '', password: '' });
-            
-            // Redirect admin users to admin dashboard, others to homepage
-            if (data.user.is_admin) {
-              navigate('/admin');
-            } else {
-              navigate('/');
-            }
+      setSuccess('Sign in successful! Welcome back.');
+      setUser(data.user);
+      setFormData({ fullName: '', email: '', password: '' });
+      
+      if (data.user.is_admin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect to the server.';
       setError(errorMessage);
       console.error('Sign-in fetch error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const googleDivRef = React.useRef<HTMLDivElement | null>(null);
+
+  const switchMode = (newSignUpMode: boolean) => {
+    setSignUpMode(newSignUpMode);
+    setForgotPasswordMode(false);
+    setResendVerificationMode(false);
+    setError('');
+    setSuccess('');
+    setFormData({ fullName: '', email: '', password: '' });
+    setForgotPasswordEmail('');
+    setResendVerificationEmail('');
+    navigate(newSignUpMode ? '/signin?mode=signup' : '/signin');
+  };
+
+  const switchToForgotPassword = () => {
+    setForgotPasswordMode(true);
+    setResendVerificationMode(false);
+    setError('');
+    setSuccess('');
+    setForgotPasswordEmail(formData.email || '');
+  };
+
+  const switchToResendVerification = () => {
+    setResendVerificationMode(true);
+    setForgotPasswordMode(false);
+    setError('');
+    setSuccess('');
+    setResendVerificationEmail(formData.email || '');
+  };
+
+  const backToSignIn = () => {
+    setForgotPasswordMode(false);
+    setResendVerificationMode(false);
+    setError('');
+    setSuccess('');
+  };
 
   return (
     <div className="min-h-screen gradient-secondary">
@@ -279,7 +387,7 @@ const SignIn: React.FC = () => {
               <a href="/" className="hover:opacity-90 transition-opacity duration-200">
                 <img
                   src="/veri.png"
-                  alt="Veriffyvista"
+                  alt="Verifyvista"
                   style={{ height: '150px', width: '150px' }}
                   className="object-contain"
                 />
@@ -310,10 +418,7 @@ const SignIn: React.FC = () => {
               </div>
             ) : (
               <button
-                onClick={() => {
-                  setSignUpMode(!signUpMode);
-                  navigate(signUpMode ? '/signin' : '/signin?mode=signup');
-                }}
+                onClick={() => switchMode(!signUpMode)}
                 className="hidden sm:inline-flex bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 shadow-sm"
               >
                 {signUpMode ? 'Sign In' : 'Sign Up'}
@@ -322,65 +427,103 @@ const SignIn: React.FC = () => {
           </div>
         </div>
       </header>
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: signUpMode ? 'Sign Up' : 'Sign In' }]} />
+      <Breadcrumb
+        items={[
+          { label: 'Home', href: '/' },
+          {
+            label: forgotPasswordMode
+              ? 'Forgot Password'
+              : resendVerificationMode
+              ? 'Resend Verification'
+              : signUpMode
+              ? 'Sign Up'
+              : 'Sign In',
+          },
+        ]}
+      />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card-elevated p-6 md:p-8">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
-              {signUpMode ? 'Join Verifyvista!' : 'Welcome Back to Verifyvista!'}
+              {forgotPasswordMode
+                ? 'Reset Your Password'
+                : resendVerificationMode
+                ? 'Resend Verification Email'
+                : signUpMode
+                ? 'Join Verifyvista!'
+                : 'Welcome Back to Verifyvista!'}
             </h2>
             <p className="text-gray-600 mb-6">
-              {signUpMode ? 'Create an account to access powerful business insights.' : 'Sign in to access powerful business insights instantly.'}
+              {forgotPasswordMode
+                ? 'Enter your email address and we\'ll send you a link to reset your password.'
+                : resendVerificationMode
+                ? 'Enter your email address to resend the verification email.'
+                : signUpMode
+                ? 'Create an account to access powerful business insights. Please verify your email after signing up.'
+                : 'Sign in to access powerful business insights instantly.'}
             </p>
-            <ul className="space-y-4">
-              {[
-                'Comprehensive Reports – View financial performance, credit ratings & more.',
-                'Stay Informed – Get alerts on company changes & key updates.',
-                'Your Data, Secured – We prioritize privacy and security.',
-                'Seamless Access – Pick up where you left off with real‑time updates.',
-              ].map((text) => (
-                <li key={text} className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2" />
-                  <span className="text-gray-700">{text}</span>
-                </li>
-              ))}
-            </ul>
+            {!forgotPasswordMode && !resendVerificationMode && (
+              <ul className="space-y-4">
+                {[
+                  'Comprehensive Reports – View financial performance, credit ratings & more.',
+                  'Stay Informed – Get alerts on company changes & key updates.',
+                  'Your Data, Secured – We prioritize privacy and security.',
+                  'Seamless Access – Pick up where you left off with real‑time updates.',
+                ].map((text) => (
+                  <li key={text} className="flex items-start">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2" />
+                    <span className="text-gray-700">{text}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="mt-6 text-sm text-gray-600">
-              {signUpMode ? (
+              {forgotPasswordMode ? (
+                <span>
+                  Remember your password?{' '}
+                  <button onClick={backToSignIn} className="text-blue-600 hover:underline">
+                    Back to Sign In
+                  </button>
+                </span>
+              ) : resendVerificationMode ? (
+                <span>
+                  Already verified?{' '}
+                  <button onClick={backToSignIn} className="text-blue-600 hover:underline">
+                    Back to Sign In
+                  </button>
+                </span>
+              ) : signUpMode ? (
                 <span>
                   Already have an account?{' '}
-                  <button
-                    onClick={() => {
-                      setSignUpMode(false);
-                      navigate('/signin');
-                    }}
-                    className="text-blue-600 hover:underline"
-                  >
+                  <button onClick={() => switchMode(false)} className="text-blue-600 hover:underline">
                     Sign In
                   </button>
                 </span>
               ) : (
-                <span>
-                  Forgot your password?{' '}
-                  <a href="#" className="text-blue-600 hover:underline">
-                    Reset it
-                  </a>{' '}
-                  in seconds.
-                </span>
+                <>
+                  <span>
+                    Forgot your password?{' '}
+                    <button onClick={switchToForgotPassword} className="text-blue-600 hover:underline">
+                      Reset it
+                    </button>{' '}
+                    in seconds.
+                  </span>
+                  <br />
+                  <span>
+                    Need to verify your email?{' '}
+                    <button onClick={switchToResendVerification} className="text-blue-600 hover:underline">
+                      Resend verification email
+                    </button>
+                  </span>
+                </>
               )}
             </div>
             <div className="mt-2 text-sm text-gray-600">
-              {!signUpMode && (
+              {!signUpMode && !forgotPasswordMode && !resendVerificationMode && (
                 <span>
                   New to Verifyvista?{' '}
-                  <button
-                    onClick={() => {
-                      setSignUpMode(true);
-                      navigate('/signin?mode=signup');
-                    }}
-                    className="text-blue-600 hover:underline"
-                  >
+                  <button onClick={() => switchMode(true)} className="text-blue-600 hover:underline">
                     Sign Up
                   </button>{' '}
                   now and start exploring!
@@ -390,7 +533,26 @@ const SignIn: React.FC = () => {
           </div>
 
           <div className="card-elevated p-6 md:p-8">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">{signUpMode ? 'Sign Up' : 'Sign In'}</h3>
+            {(forgotPasswordMode || resendVerificationMode) && (
+              <button
+                onClick={backToSignIn}
+                className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Sign In
+              </button>
+            )}
+            
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              {forgotPasswordMode
+                ? 'Reset Password'
+                : resendVerificationMode
+                ? 'Resend Verification Email'
+                : signUpMode
+                ? 'Sign Up'
+                : 'Sign In'}
+            </h3>
+            
             {error && (
               <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-4">
                 {error}
@@ -401,99 +563,166 @@ const SignIn: React.FC = () => {
                 {success}
               </div>
             )}
-            <form className="space-y-4" onSubmit={signUpMode ? handleSignUp : handleSignIn}>
-              {signUpMode && (
+
+            {forgotPasswordMode ? (
+              <form className="space-y-4" onSubmit={handleForgotPassword}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      className="input-professional pl-10"
+                      placeholder="Enter your email address"
+                      value={forgotPasswordEmail}
+                      onChange={handleForgotPasswordEmailChange}
+                      disabled={isLoading}
+                    />
+                    <Mail className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Sending...' : 'Send Reset Link'}
+                </button>
+              </form>
+            ) : resendVerificationMode ? (
+              <form className="space-y-4" onSubmit={handleResendVerification}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      className="input-professional pl-10"
+                      placeholder="Enter your email address"
+                      value={resendVerificationEmail}
+                      onChange={handleResendVerificationEmailChange}
+                      disabled={isLoading}
+                    />
+                    <Mail className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Sending...' : 'Resend Verification Email'}
+                </button>
+              </form>
+            ) : (
+              <form className="space-y-4" onSubmit={signUpMode ? handleSignUp : handleSignIn}>
+                {signUpMode && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      className="input-professional"
+                      placeholder="Enter your full name"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                    />
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
-                    type="text"
-                    name="fullName"
+                    type="email"
+                    name="email"
                     className="input-professional"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
+                    placeholder="Enter your email"
+                    value={formData.email}
                     onChange={handleInputChange}
+                    disabled={isLoading}
                   />
                 </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  className="input-professional"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  className="input-professional"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-slate-800 hover:bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200"
-              >
-                {signUpMode ? 'Sign Up' : 'Sign In'}
-              </button>
-              {!signUpMode && (
-                <div className="text-right">
-                  <a href="#" className="text-sm text-blue-600 hover:underline">Forgot Password?</a>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    className="input-professional"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                  />
                 </div>
-              )}
-            </form>
-
-            <div className="my-6 flex items-center">
-              <div className="flex-1 h-px bg-gray-200"></div>
-              <span className="px-3 text-gray-500 text-sm">or</span>
-              <div className="flex-1 h-px bg-gray-200"></div>
-            </div>
-
-            {GOOGLE_CLIENT_ID ? (
-              <div ref={googleDivRef} className="flex justify-center" />
-            ) : (
-              <div className="text-center text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
-                Sign <code className="font-mono">{signUpMode ? 'up' : 'in'}</code> with <code className="font-mono">Google</code>.
-              </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (signUpMode ? 'Creating Account...' : 'Signing In...') : (signUpMode ? 'Sign Up' : 'Sign In')}
+                </button>
+                {!signUpMode && (
+                  <div className="text-right">
+                    <button
+                      type="button"
+                      onClick={switchToForgotPassword}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Forgot Password?
+                    </button>
+                    <br />
+                    <button
+                      type="button"
+                      onClick={switchToResendVerification}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Resend Verification Email
+                    </button>
+                  </div>
+                )}
+              </form>
             )}
 
-            <div className="mt-8 text-sm text-gray-600">
-              {signUpMode ? (
-                <span>
-                  Already have an account?{' '}
-                  <button
-                    onClick={() => {
-                      setSignUpMode(false);
-                      navigate('/signin');
-                    }}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Sign In
-                  </button>
-                </span>
-              ) : (
-                <span>
-                  New to Verifyvista?{' '}
-                  <button
-                    onClick={() => {
-                      setSignUpMode(true);
-                      navigate('/signin?mode=signup');
-                    }}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Sign Up
-                  </button>{' '}
-                  now and start exploring!
-                </span>
-              )}
-            </div>
+            {!forgotPasswordMode && !resendVerificationMode && (
+              <>
+                <div className="my-6 flex items-center">
+                  <div className="flex-1 h-px bg-gray-200"></div>
+                  <span className="px-3 text-gray-500 text-sm">or</span>
+                  <div className="flex-1 h-px bg-gray-200"></div>
+                </div>
+
+                {GOOGLE_CLIENT_ID ? (
+                  <div ref={googleDivRef} className="flex justify-center" />
+                ) : (
+                  <div className="text-center text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
+                    Sign <code className="font-mono">{signUpMode ? 'up' : 'in'}</code> with <code className="font-mono">Google</code>.
+                  </div>
+                )}
+
+                <div className="mt-8 text-sm text-gray-600">
+                  {signUpMode ? (
+                    <span>
+                      Already have an account?{' '}
+                      <button
+                        onClick={() => switchMode(false)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Sign In
+                      </button>
+                    </span>
+                  ) : (
+                    <span>
+                      New to Verifyvista?{' '}
+                      <button
+                        onClick={() => switchMode(true)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Sign Up
+                      </button>{' '}
+                      now and start exploring!
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </main>
