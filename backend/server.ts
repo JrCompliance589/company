@@ -26,7 +26,7 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite frontend URL
+  origin: 'http://localhost:3003', // Vite frontend URL
   credentials: true, // Allow cookies
 }));
 
@@ -40,7 +40,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Email configuration
 const emailConfig = {
   host: 'notify.jrcompliance.com',
-  port: 465,
+  port: 587,
   secure: true, // true for 465, false for other ports
   auth: {
     user: 'support@verifyvista.com',
@@ -500,7 +500,7 @@ app.post('/api/signup', async (req: Request, res: Response) => {
     });
 
     // Send verification email
-    const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `http://localhost:3003/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
     const emailHTML = generateVerificationEmailHTML(verificationLink, full_name);
     const emailResult = await sendEmail(
       email,
