@@ -41,7 +41,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 const emailConfig = {
   host: 'notify.jrcompliance.com',
   port: 587,
-  secure: true, // true for 465, false for other ports
+  secure: false, // true for 465, false for other ports
   auth: {
     user: 'support@verifyvista.com',
     pass: 'IMIshA,%,12'
