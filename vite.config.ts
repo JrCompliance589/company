@@ -16,4 +16,7 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    allowedHosts: ['verifyvista.com'], // 👈 add this line
+  },
 });
