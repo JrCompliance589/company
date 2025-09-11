@@ -26,7 +26,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
 }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Calculate dropdown position and handle scroll
+  // Calculate dropdown position and keep it consistent during scroll
   useEffect(() => {
     if (!isVisible || !searchContainerRef?.current || !dropdownRef.current) return;
 
@@ -45,12 +45,23 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
     // Initial position calculation
     requestAnimationFrame(updatePosition);
 
-    // Close dropdown on scroll instead of updating position
+    // Handle scroll - close dropdown if search input goes out of view
     const handleScroll = () => {
-      onClose();
+      if (!isVisible || !searchContainerRef?.current) return;
+      
+      const searchRect = searchContainerRef.current.getBoundingClientRect();
+      
+      // If search input is going out of viewport (too high), close dropdown
+      if (searchRect.bottom < 0) {
+        onClose();
+        return;
+      }
+      
+      // Otherwise just update position
+      requestAnimationFrame(updatePosition);
     };
 
-    // Update position on resize only
+    // Update position on resize
     const handleResize = () => {
       if (isVisible) {
         requestAnimationFrame(updatePosition);
@@ -70,7 +81,6 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   const handleResultClick = (result: SearchResult, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    //console.log('SearchDropdown: Button clicked:', result);
     onSelectResult(result);
   };
 
@@ -93,7 +103,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
           backdropFilter: 'blur(12px)'
         }}
         onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling to backdrop
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header with dark gradient */}
         <div 
@@ -135,8 +145,33 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
           </div>
         </div>
 
-        {/* Scrollable content */}
-        <div className="max-h-96 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+        {/* Scrollable content with custom scrollbar */}
+        <div 
+          className="max-h-96 overflow-y-auto" 
+          style={{ 
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(71, 85, 105, 0.5) transparent'
+          }}
+          onScroll={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <style jsx>{`
+            div::-webkit-scrollbar {
+              width: 8px;
+            }
+            div::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            div::-webkit-scrollbar-thumb {
+              background-color: rgba(71, 85, 105, 0.5);
+              border-radius: 4px;
+            }
+            div::-webkit-scrollbar-thumb:hover {
+              background-color: rgba(71, 85, 105, 0.7);
+            }
+          `}</style>
+          
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
               <div className="relative">
@@ -186,7 +221,6 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    //console.log('SearchDropdown: Div clicked:', result);
                     handleResultClick(result, e);
                   }}
                   onKeyDown={onKeyDown}
@@ -317,7 +351,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
             }}
           >
             <div className="flex items-center justify-between text-xs" style={{ color: '#94a3b8' }}>
-              <span>Press ↵ to select</span>
+              <span>Press ↵ to select • ↑↓ to navigate</span>
               <span>ESC to close</span>
             </div>
           </div>

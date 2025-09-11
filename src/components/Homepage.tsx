@@ -89,9 +89,19 @@ const Homepage: React.FC = () => {
     }
   };
 
-  // Handle keyboard navigation
+  // Updated keyboard navigation with enhanced Enter key behavior
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown || searchResults.length === 0) return;
+    if (!showDropdown || searchResults.length === 0) {
+      // If no dropdown or no results, handle Enter differently
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        // Just perform a search or navigate to default company page
+        if (searchQuery.trim()) {
+          handleSearch(e as any);
+        }
+      }
+      return;
+    }
 
     switch (e.key) {
       case 'ArrowDown':
@@ -108,9 +118,14 @@ const Homepage: React.FC = () => {
         break;
       case 'Enter':
         e.preventDefault();
+        // If no specific selection (selectedIndex is -1 or invalid), select first result
         if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
           //console.log('Homepage: Enter key pressed, selecting result:', searchResults[selectedIndex]);
           handleSelectResult(searchResults[selectedIndex]);
+        } else if (searchResults.length > 0) {
+          // Select first result if no specific selection
+          //console.log('Homepage: Enter key pressed, selecting first result:', searchResults[0]);
+          handleSelectResult(searchResults[0]);
         }
         break;
       case 'Escape':
@@ -150,8 +165,18 @@ const Homepage: React.FC = () => {
     };
   }, []);
 
+  // Updated handleSearch function with enhanced behavior
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // If there are search results and user just typed without selecting, use first result
+    if (searchResults.length > 0 && searchQuery.trim()) {
+      //console.log('Form submit: Selecting first result:', searchResults[0]);
+      handleSelectResult(searchResults[0]);
+      return;
+    }
+    
+    // Original fallback behavior
     if (searchQuery.trim()) {
       // Navigate to company profile - for demo purposes, we'll use Jupiter Wagons
       window.location.href = '/company';
