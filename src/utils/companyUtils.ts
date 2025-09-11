@@ -21,6 +21,9 @@ export interface ProcessedCompanyData {
   settledLoans: string;
   formattedOpenCharges: string;
   formattedSettledLoans: string;
+  website?: string;
+  Website?: string;
+  logoUrl?: string;
 }
 
 export interface DirectorData {
@@ -384,6 +387,11 @@ export const processCompanyData = (data: SearchResult): ProcessedCompanyData => 
     openCharges: chargesInfo.openCharges.toString(),
     settledLoans: chargesInfo.settledLoans.toString(),
     formattedOpenCharges,
-    formattedSettledLoans
+    formattedSettledLoans,
+     // FIX: Use the correct field name from MeiliSearch data
+    website: data.Website || data.website || '', // Use capital W first
+    Website: data.Website || data.website || '', // Keep both for compatibility
+  // FIX: Use the correct field name for logo
+    logoUrl: data.Logo_Base64 || '', // This is the actual field name from your data
   };
 };

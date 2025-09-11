@@ -1,5 +1,5 @@
-import React from 'react';
-import { Shield, Share2, Download, MapPin, Calendar, TrendingUp, Building2 } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Shield, Share2, Download, MapPin, Calendar, TrendingUp, Building2, ExternalLink, Globe } from 'lucide-react';
 import { ProcessedCompanyData } from '../utils/companyUtils';
 
 interface CompanyHeaderProps {
@@ -7,15 +7,114 @@ interface CompanyHeaderProps {
 }
 
 const CompanyHeader: React.FC<CompanyHeaderProps> = ({ companyData }) => {
-  //console.log('CompanyHeader received companyData:', companyData);
+  // Helper functions for website handling
+  const formatWebsiteUrl = (website: string | undefined): string | null => {
+    if (!website || !website.trim()) return null;
+    const cleanUrl = website.trim();
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      return `https://${cleanUrl}`;
+    }
+    return cleanUrl;
+  };
+
+  const getDisplayUrl = (website: string | undefined): string => {
+    if (!website) return 'Not Available';
+    return website
+      .replace(/^https?:\/\//, '') // Remove protocol
+      .replace(/^www\./, '')       // Remove www
+      .replace(/\/$/, '');         // Remove trailing slash
+  };
+
+  // Helper function for logo handling
+  const convertBase64ToImageUrl = (base64String: string): string | null => {
+    try {
+      // Remove data URL prefix if present
+      const base64Data = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
+      
+      // Convert base64 to binary
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      // Create blob and return object URL - assume WebP format based on your data
+      const blob = new Blob([bytes], { type: 'image/webp' });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      //console.error('Error converting base64 to image URL:', error);
+      return null;
+    }
+  };
+
+  // Process website data
+  const websiteField = companyData?.Website || companyData?.website;
+  const websiteUrl = formatWebsiteUrl(websiteField);
+  const displayWebsite = getDisplayUrl(websiteField);
+  const hasWebsite = !!(websiteField && websiteField.trim());
+
+  // Process logo data - Debug logging
+  {/*console.log('Logo processing debug:', {
+    logoUrl: companyData?.logoUrl,
+    hasLogoUrl: !!(companyData?.logoUrl),
+    logoUrlLength: companyData?.logoUrl?.length
+  }); */}
+  //
+
+  const logoBase64 = companyData?.logoUrl;
+  const hasLogo = !!(logoBase64 && logoBase64.trim());
+  let logoImageUrl: string | null = null;
+  
+  if (hasLogo) {
+    try {
+      logoImageUrl = convertBase64ToImageUrl(logoBase64);
+      //console.log('Logo conversion result:', logoImageUrl ? 'success' : 'failed');
+    } catch (error) {
+      //console.error('Failed to convert logo:', error);
+      logoImageUrl = null;
+    }
+  }
+  
+  const shouldShowLogo = hasLogo && logoImageUrl;
+
+  // Cleanup blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (logoImageUrl) {
+        URL.revokeObjectURL(logoImageUrl);
+      }
+    };
+  }, [logoImageUrl]);
+
   return (
     <div className="card-elevated p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
         <div className="flex items-start gap-4 md:gap-6 min-w-0 flex-1">
           {/* Company Logo */}
           <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg border border-blue-200/50">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg">
-              <Building2 className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
+            {shouldShowLogo ? (
+              <img 
+                src={logoImageUrl}
+                alt={`${companyData?.companyName || 'Company'} logo`}
+                className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain rounded-xl"
+                onError={(e) => {
+                  //console.error('Logo failed to load');
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) {
+                    fallback.style.display = 'flex';
+                    fallback.classList.remove('hidden');
+                  }
+                }}
+              />
+            ) : null}
+            {/* Default fallback logo */}
+            <div 
+              className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg ${shouldShowLogo ? 'hidden' : 'flex'}`}
+            >
+              <Building2 className="h-6 w-6 sm:h-10 sm:w-10 md:h-12 md:w-12 text-white" />
             </div>
           </div>
 
@@ -41,18 +140,17 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({ companyData }) => {
             </div>
 
             <p className="text-gray-600 mb-3 md:mb-4 leading-relaxed text-sm sm:text-base">
-  A leading{' '}
-  {companyData?.classOfCompany
-    ? companyData.classOfCompany.toLowerCase().includes('public')
-      ? 'public limited company'
-      : companyData.classOfCompany.toLowerCase().includes('private')
-        ? 'private limited company'
-        : companyData.classOfCompany.toLowerCase()
-    : 'limited company'}{' '}
-  based in {companyData?.location || 'Jabalpur, Madhya Pradesh, India'}, established in{' '}
-  {companyData?.formattedIncorporationDate || '1979'}.
-</p>
-
+              A leading{' '}
+              {companyData?.classOfCompany
+                ? companyData.classOfCompany.toLowerCase().includes('public')
+                  ? 'public limited company'
+                  : companyData.classOfCompany.toLowerCase().includes('private')
+                    ? 'private limited company'
+                    : companyData.classOfCompany.toLowerCase()
+                : 'limited company'}{' '}
+              based in {companyData?.location || 'Jabalpur, Madhya Pradesh, India'}, established in{' '}
+              {companyData?.formattedIncorporationDate || '1979'}.
+            </p>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm text-gray-500">
               <div className="flex items-center space-x-2">
@@ -77,11 +175,28 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({ companyData }) => {
                 </div>
                 <span className="font-semibold text-green-600">Active</span>
               </div>
+              
+              {/* Dynamic Website Section */}
               <div className="flex items-center space-x-2">
-                <div className="p-1.5 bg-gray-100 rounded-lg">
-                  <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                <div className="p-1.5 bg-indigo-100 rounded-lg">
+                  <Globe className="h-4 w-4 text-indigo-600" />
                 </div>
-                <span className="font-semibold text-gray-600">Website</span>
+                {hasWebsite ? (
+                  <a
+                    href={websiteUrl!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-1 text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                    title={`Visit ${companyData?.companyName || 'company'} website`}
+                  >
+                    <span className="text-xs sm:text-sm">{displayWebsite}</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) : (
+                  <span className="font-medium text-gray-500 text-xs sm:text-sm">
+                    No Website
+                  </span>
+                )}
               </div>
             </div>
           </div>

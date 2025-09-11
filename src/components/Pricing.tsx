@@ -8,7 +8,7 @@ import Header from './Header';
 const tiers = [
   {
     name: 'Single Company Report',
-    price: '₹299',
+    price: '₹499',
     period: 'one-time',
     description: 'One-time access to a detailed report for any single company.',
     features: [

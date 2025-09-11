@@ -31,11 +31,11 @@ const CompanyReviews: React.FC<CompanyReviewsProps> = ({
   companyName,
   companyUrl,
   ratingValue = 4.8,
-  reviewCount = 124,
+  reviewCount = 50000,
   reviews = [
-    { author: 'Amit S.', rating: 5, date: '2025-01-10', text: 'Accurate, up-to-date company info. Helped our vendor checks.' },
-    { author: 'Priya K.', rating: 5, date: '2025-01-06', text: 'Great insights on directors and indicators. Smooth experience.' },
-    { author: 'Rahul M.', rating: 4, date: '2025-01-02', text: 'Solid coverage and quick access to compliance data.' },
+    { author: 'Gulab R.', rating: 5, date: '2025-01-10', text: 'Accurate, up-to-date company info. Helped our vendor checks.' },
+    { author: 'Krishan k.', rating: 5, date: '2025-01-06', text: 'Great insights on directors and indicators. Smooth experience.' },
+    { author: 'Avinash.', rating: 4, date: '2025-01-02', text: 'Solid coverage and quick access to compliance data.' },
   ],
 }) => {
   const jsonLd = useMemo(() => {

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview --host --port 3003",
+    "preview": "vite preview --host",
     "test-meilisearch": "node scripts/test-meilisearch.js",
     "generate-sitemap": "node scripts/generate-sitemap.js"
   },
@@ -16,12 +16,14 @@
     "@heroicons/react": "^2.2.0",
     "framer-motion": "^12.23.6",
     "lucide-react": "^0.344.0",
+    "nodemailer": "^7.0.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@types/nodemailer": "^7.0.1",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
